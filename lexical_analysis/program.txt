@@ -1,5 +1,6 @@
 program {
 	string str = "hello";
+# commet wow so cool 123 #
 	boolean b = (true <= false);
 top:
 	write ("hello");		

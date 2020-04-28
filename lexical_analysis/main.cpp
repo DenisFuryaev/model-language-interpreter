@@ -74,7 +74,7 @@ private:
     char  c;
     char  buf[buf_size];
     int   buf_top;
-    enum  state {H, LITERAL, NUM, DELIM, STRING, COMMENT};
+    enum  state {H, LITERAL, NUM, DELIM, STRING, COMMENT, ALE};
     state CS;
     static const char * Reserved_Table[];
     static const char * Delim_Table[];
@@ -84,7 +84,7 @@ private:
 
 
 const char * Lexer::Reserved_Table[] = {"program", "write", "read", "and", "or", "not", "if", "case", "of", "end", "do", "while", "for", "until", "continue", "break", "true", "false", "int", "real", "boolean", "string", "goto", NULL}; // change when new Lex is added in type_of_lex!!!!!"
-const char * Lexer::Delim_Table[] = {":",";", ",", "(", ")", "{", "}", "+", "-", "*", "/", ">", "<", "=", ">=", "<=", "==", "!=", "\"", NULL}; // change when new Lex is added in type_of_lex!!!!!
+const char * Lexer::Delim_Table[] = {":",";", ",", "(", ")", "{", "}", "+", "-", "*", "/", ">", "<", "=", ">=", "<=", "==", "!=", "\"", "#", NULL}; // change when new Lex is added in type_of_lex!!!!!
 
 Lexer::Lexer(const char * program_file_path) {
     fp = fopen(program_file_path, "r");
@@ -97,7 +97,7 @@ Lexer::Lexer(const char * program_file_path) {
 
 void  Lexer::add_char() {
     if (buf_top >= buf_size)
-        throw ;
+        throw -1;
     buf[buf_top++] = c;
 }
 
@@ -124,9 +124,11 @@ Lex Lexer::get_lex() {
         if (feof(fp)) {
             if (CS == STRING)
                 throw Lex::STRING;
+            if (CS == COMMENT)
+                throw -2;
             return Lex(Lex::FIN);
         }
-        switch (CS) {
+        switch (CS) { /* dfg */
             case H:
                 if ((c == ' ') || (c == '\n') || (c == '\t') || (c == '\r')) {
                     read_char();
@@ -142,8 +144,16 @@ Lex Lexer::get_lex() {
                     clear(); add_char(); read_char(); CS = NUM;
                     break;
                 }
+                if ((c == '>') || (c == '<') || (c == '=') || (c == '!')) {
+                    clear(); add_char(); read_char(); CS = ALE;
+                    break;
+                }
                 if (c == '"') {
                     clear(); read_char(); CS = STRING;
+                    break;
+                }
+                if (c == '#') {
+                    clear(); read_char(); CS = COMMENT;
                     break;
                 }
                 else
@@ -168,13 +178,19 @@ Lex Lexer::get_lex() {
                 }
                 else return Lex(Lex::NUM, buf);
                 break;
-            
-            case DELIM:
+                
+            case ALE:
                 if (c == '=') {
                     add_char();
                     read_char();
                 }
                 if ((index = look(buf, Delim_Table)) >= 0) return Lex(Lex::type_of_lex(Lex::COLON + index));
+                throw c;
+                break;
+            
+            case DELIM:
+                if ((index = look(buf, Delim_Table)) >= 0) return Lex(Lex::type_of_lex(Lex::COLON + index));
+                throw c;
                 break;
                 
             case STRING:
@@ -184,6 +200,16 @@ Lex Lexer::get_lex() {
                 else {
                     read_char();
                     return Lex(Lex::STRING, buf);
+                }
+                break;
+                
+            case COMMENT:
+                if (c != '#') {
+                    add_char(); read_char();
+                }
+                else {
+                    read_char();
+                    CS = H;
                 }
                 break;
                 
@@ -205,6 +231,17 @@ int main(int argc, const char * argv[]) {
         }
         catch (Lex::type_of_lex lex_type){
             std::cerr << "unhandled error in: " << type_of_lex_readable[lex_type] << std::endl;
+            break;
+        }
+        catch (char c){
+            std::cerr << "unhandled error in char: " << c << std::endl;
+            break;
+        }
+        catch (int x){
+            if (x == -1)
+                std::cerr << "unhandled error: buffer overflow" << std::endl;
+            if (x == -2)
+                std::cerr << "unhandled error: comment does not closedÇ" << std::endl;
             break;
         }
         std::cout << lex;
