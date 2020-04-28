@@ -1,0 +1,7 @@
+program {
+	string str = "hello";
+	boolean b = (true <= false);
+top:
+	write ("hello");		
+	goto top;
+}
