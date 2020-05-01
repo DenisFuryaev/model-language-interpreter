@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		975F8097244C6A88000160F9 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 975F8096244C6A88000160F9 /* main.cpp */; };
+		976DF2B8245C27D800CEB531 /* IdentClass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 976DF2B6245C27D800CEB531 /* IdentClass.cpp */; };
 		978E099B245B06890040EFF9 /* LexerClass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 978E0999245B06890040EFF9 /* LexerClass.cpp */; };
 		978E099E245B07810040EFF9 /* LexClass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 978E099C245B07810040EFF9 /* LexClass.cpp */; };
 /* End PBXBuildFile section */
@@ -27,6 +28,8 @@
 /* Begin PBXFileReference section */
 		975F8093244C6A88000160F9 /* lexical_analysis */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = lexical_analysis; sourceTree = BUILT_PRODUCTS_DIR; };
 		975F8096244C6A88000160F9 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		976DF2B6245C27D800CEB531 /* IdentClass.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IdentClass.cpp; sourceTree = "<group>"; };
+		976DF2B7245C27D800CEB531 /* IdentClass.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IdentClass.hpp; sourceTree = "<group>"; };
 		978E0999245B06890040EFF9 /* LexerClass.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = LexerClass.cpp; sourceTree = "<group>"; };
 		978E099A245B06890040EFF9 /* LexerClass.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = LexerClass.hpp; sourceTree = "<group>"; };
 		978E099C245B07810040EFF9 /* LexClass.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = LexClass.cpp; sourceTree = "<group>"; };
@@ -68,6 +71,8 @@
 				978E099A245B06890040EFF9 /* LexerClass.hpp */,
 				978E099C245B07810040EFF9 /* LexClass.cpp */,
 				978E099D245B07810040EFF9 /* LexClass.hpp */,
+				976DF2B6245C27D800CEB531 /* IdentClass.cpp */,
+				976DF2B7245C27D800CEB531 /* IdentClass.hpp */,
 			);
 			path = lexical_analysis;
 			sourceTree = "<group>";
@@ -130,6 +135,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				975F8097244C6A88000160F9 /* main.cpp in Sources */,
+				976DF2B8245C27D800CEB531 /* IdentClass.cpp in Sources */,
 				978E099E245B07810040EFF9 /* LexClass.cpp in Sources */,
 				978E099B245B06890040EFF9 /* LexerClass.cpp in Sources */,
 			);

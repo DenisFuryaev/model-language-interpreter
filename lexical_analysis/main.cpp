@@ -51,9 +51,9 @@ private:
 /*
 
  <program>      ->  program "{" <descriptions> <operators> "}"
- <descriptions> ->  { description>";" }
+ <descriptions> ->  { <description>";" }
  <description>  ->  <type> <variable> { ","<variable> }
- <type>         ->  int | string | boolean
+ <type>         ->  "int" | "string" | "boolean"
  <variable>     ->  <identifier> | <identifier> "=" <constant>
  <constant>     ->  <integer> | <string> | <logical>
  <integer>      ->  [<sign>] <numeral> { <numeral> }
@@ -83,8 +83,55 @@ void Parser::analyze() {
     std::cout << "successfully parsed" << std::endl;
 }
 
+ // <program> ->  program "{" <descriptions> <operators> "}"
 void Parser::program() {
+    if (curr_lex_type == Lex::PROGRAM)
+        get_lex();
+    else
+        throw curr_lex;
+    if (curr_lex_type == Lex::OPEN_BRACES)
+        get_lex();
+    else
+        throw curr_lex;
     
+    descriptions();
+    operators();
+    
+    if (curr_lex_type == Lex::CLOSE_BRACES)
+        get_lex();
+    else
+        throw curr_lex;
+    if (curr_lex_type != Lex::FIN)
+        throw curr_lex;
+}
+
+// <descriptions> -> { <description>";" }
+void Parser::descriptions() {
+    description();
+    if (curr_lex_type == Lex::SEMICOLON)
+        get_lex();
+    else
+        throw curr_lex;
+}
+
+// <description> -> <type> <variable> { ","<variable> }
+void Parser::description() {
+    type();
+    variable();
+    while (curr_lex_type == Lex::COMMA)
+        variable();
+}
+
+// <type> -> "int" | "string" | "boolean"
+void Parser::type() {
+    if (curr_lex_type == Lex::INT)
+        get_lex();
+    if (curr_lex_type == Lex::STRING_TYPE)
+        get_lex();
+    if (curr_lex_type == Lex::BOOLEAN)
+        get_lex();
+    else
+        throw curr_lex;
 }
 
 
