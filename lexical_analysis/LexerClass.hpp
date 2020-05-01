@@ -29,6 +29,7 @@ private:
     int   look(const char * buf, const char ** list);
     void  add_char();
     
+    
 private:
     FILE* fp;
     char  c;

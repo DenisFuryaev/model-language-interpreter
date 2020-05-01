@@ -13,6 +13,116 @@
 #include "LexerClass.hpp"
 
 
+class Parser {
+    
+public:
+    Parser(const char * program_file_path): lexer(program_file_path){}
+    
+private:
+    Lexer lexer;
+    
+    Lex curr_lex;
+    Lex::type_of_lex curr_lex_type;
+    const char * curr_lex_value;
+
+private:
+    
+    void get_lex();
+    void analyze();
+    
+    void program();
+    void descriptions();
+    void description();
+    void type();
+    void variable();
+    void constant();
+    void integer();
+    void sign();
+    void string();
+    void logical();
+    void operators();
+    void _operator();
+    void composite_operator();
+    void expression_operator();
+    
+};
+//------------------------------------------------------------------------------------------------------------------------------------------------------
+
+/*
+
+ <program>      ->  program "{" <descriptions> <operators> "}"
+ <descriptions> ->  { description>";" }
+ <description>  ->  <type> <variable> { ","<variable> }
+ <type>         ->  int | string | boolean
+ <variable>     ->  <identifier> | <identifier> "=" <constant>
+ <constant>     ->  <integer> | <string> | <logical>
+ <integer>      ->  [<sign>] <numeral> { <numeral> }
+ <sign>         ->  "+" | "-"
+ <string>       ->  """{ literal }"""
+ <logical>      ->  "true" | "false"
+ <operators>    ->  { <operator> }
+ <_operator>    ->  "if"    "("<expression>")" <_operator> else <_operator> |
+                    "while" "("<expression>")" <_operator>                  |
+                    "read"  "("<identifier>")" ";"                          |
+                    "write" "("<expression> { ","<expression> }")" ";"      |
+                    <composite_operator> | <expression_operator>
+ <composite_operator>   -> "{"<_operator>"}"
+ <expression_operator>  -> <expression>
+ 
+*/
+
+void Parser::get_lex() {
+    curr_lex = lexer.get_lex();
+    curr_lex_type = curr_lex.get_type();
+    curr_lex_value = curr_lex.get_value();
+}
+
+void Parser::analyze() {
+    get_lex();
+    program();
+    std::cout << "successfully parsed" << std::endl;
+}
+
+void Parser::program() {
+    
+}
+
+
+//======================================================================================================================================================
+
+int main(int argc, const char * argv[]) {
+    
+    Lexer lexer("program.txt");
+    Lex lex;
+    do {
+        try {
+            lex = lexer.get_lex();
+        }
+        catch (Lex::type_of_lex lex_type){
+            //std::cerr << "unhandled error in: " << type_of_lex_readable[lex_type] << std::endl;
+            
+            // why does main cpp program don't khow about type_of_lex_readable ??????
+            
+            std::cerr << "unhandled error in: " << lex_type << std::endl;
+            break;
+        }
+        catch (char c){
+            std::cerr << "unhandled error in char: " << c << std::endl;
+            break;
+        }
+        catch (int x){
+            if (x == -1)
+                std::cerr << "unhandled error: buffer overflow" << std::endl;
+            if (x == -2)
+                std::cerr << "unhandled error: comment does not closedÇ" << std::endl;
+            break;
+        }
+        std::cout << lex;
+    }   while(lex.get_type() != Lex::FIN);
+    std::cout << "\n";
+    
+    return 0;
+}
 
 
 //const char * type_of_lex_readable[] = {
@@ -226,39 +336,3 @@
 //        }
 //    }
 //}
-
-//======================================================================================================================================================
-
-int main(int argc, const char * argv[]) {
-    
-    Lexer lexer("program.txt");
-    Lex lex;
-    do {
-        try {
-            lex = lexer.get_lex();
-        }
-        catch (Lex::type_of_lex lex_type){
-            //std::cerr << "unhandled error in: " << type_of_lex_readable[lex_type] << std::endl;
-            
-            // why does main cpp program don't khow about type_of_lex_readable ??????
-            
-            std::cerr << "unhandled error in: " << lex_type << std::endl;
-            break;
-        }
-        catch (char c){
-            std::cerr << "unhandled error in char: " << c << std::endl;
-            break;
-        }
-        catch (int x){
-            if (x == -1)
-                std::cerr << "unhandled error: buffer overflow" << std::endl;
-            if (x == -2)
-                std::cerr << "unhandled error: comment does not closedÇ" << std::endl;
-            break;
-        }
-        std::cout << lex;
-    }   while(lex.get_type() != Lex::FIN);
-    std::cout << "\n";
-    
-    return 0;
-}
