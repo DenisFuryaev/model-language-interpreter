@@ -23,21 +23,21 @@ public:
     Ident(const char * name);
     char *  get_name();
     virtual var_type get_type() = 0;
+    virtual void put_value(const char * value) = 0;
 
 private:
     char name[buf_size];
 };
 
-class StingIdent : public Ident {
+class StringIdent : public Ident {
     
 public:
-    StingIdent(const char * name)
+    StringIdent(const char * name)
     : Ident(name) {}
 
-    virtual var_type get_type() { return Ident::STR; }
-    
-    char * get_value();
-    void   put_value(const char * value);
+    virtual var_type    get_type() { return Ident::STR; }
+    char *              get_value();
+    virtual void        put_value(const char * value);
     
 private:
     char value[buf_size];
@@ -49,10 +49,9 @@ public:
     IntIdent(const char * name)
     : Ident(name) {}
 
-    virtual var_type get_type() { return Ident::INT; }
-    
-    int      get_value();
-    void     put_value(int value);
+    virtual var_type    get_type() { return Ident::INT; }
+    int                 get_value();
+    virtual void        put_value(const char * value);
     
 private:
     int value;
@@ -64,10 +63,9 @@ public:
     BoolIdent(const char * name)
     : Ident(name) {}
 
-    virtual var_type get_type() { return Ident::BOOL; }
-    
-    bool    get_value();
-    void    put_value(bool value);
+    virtual var_type    get_type() { return Ident::BOOL; }
+    bool                get_value();
+    virtual void        put_value(const char * value);
     
 private:
     bool value;

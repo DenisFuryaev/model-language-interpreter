@@ -11,7 +11,10 @@
 
 #include "LexClass.hpp"
 #include "LexerClass.hpp"
+#include "IdentClass.hpp"
+#include "Tabl_Ident_Class.hpp"
 
+Tabl_Ident TID(100);
 
 class Parser {
     
@@ -31,10 +34,10 @@ private:
     void analyze();
     
     void program();
-    void descriptions();
-    void description();
-    void type();
-    void variable();
+    void declarations();
+    void declaration();
+    //void type();
+    void variable(Ident::var_type var_type);
     void constant();
     void integer();
     void sign();
@@ -50,9 +53,9 @@ private:
 
 /*
 
- <program>      ->  program "{" <descriptions> <operators> "}"
- <descriptions> ->  { <description>";" }
- <description>  ->  <type> <variable> { ","<variable> }
+ <program>      ->  program "{" <declarations> <operators> "}"
+ <declarations> ->  { <declaration>";" }
+ <declaration>  ->  <type> <variable> { ","<variable> }
  <type>         ->  "int" | "string" | "boolean"
  <variable>     ->  <identifier> | <identifier> "=" <constant>
  <constant>     ->  <integer> | <string> | <logical>
@@ -60,7 +63,7 @@ private:
  <sign>         ->  "+" | "-"
  <string>       ->  """{ literal }"""
  <logical>      ->  "true" | "false"
- <operators>    ->  { <operator> }
+ <operators>    ->  { <_operator> }
  <_operator>    ->  "if"    "("<expression>")" <_operator> else <_operator> |
                     "while" "("<expression>")" <_operator>                  |
                     "read"  "("<identifier>")" ";"                          |
@@ -70,6 +73,7 @@ private:
  <expression_operator>  -> <expression>
  
 */
+
 
 void Parser::get_lex() {
     curr_lex = lexer.get_lex();
@@ -83,7 +87,7 @@ void Parser::analyze() {
     std::cout << "successfully parsed" << std::endl;
 }
 
- // <program> ->  program "{" <descriptions> <operators> "}"
+ // <program> ->  program "{" <declarations> <operators> "}"
 void Parser::program() {
     if (curr_lex_type == Lex::PROGRAM)
         get_lex();
@@ -94,7 +98,7 @@ void Parser::program() {
     else
         throw curr_lex;
     
-    descriptions();
+    declarations();
     operators();
     
     if (curr_lex_type == Lex::CLOSE_BRACES)
@@ -105,35 +109,90 @@ void Parser::program() {
         throw curr_lex;
 }
 
-// <descriptions> -> { <description>";" }
-void Parser::descriptions() {
-    description();
+// <declarations> -> { <declaration>";" }
+void Parser::declarations() {
+    declaration();
     if (curr_lex_type == Lex::SEMICOLON)
         get_lex();
     else
         throw curr_lex;
 }
 
-// <description> -> <type> <variable> { ","<variable> }
-void Parser::description() {
-    type();
-    variable();
+// <declaration> -> <type> <variable> { ","<variable> }
+// <type>        -> "int" | "string" | "boolean"
+void Parser::declaration() {
+    Ident::var_type var_type;
+    switch (curr_lex_type) {
+        case Lex::INT:
+            var_type = Ident::INT;
+            break;
+        case Lex::STRING_TYPE:
+            var_type = Ident::STR;
+            break;
+        case Lex::BOOLEAN:
+            var_type = Ident::BOOL;
+            break;
+        default:
+            throw curr_lex;
+    }
+    
+    variable(var_type);
+    
     while (curr_lex_type == Lex::COMMA)
-        variable();
+        variable(var_type);
 }
 
-// <type> -> "int" | "string" | "boolean"
-void Parser::type() {
-    if (curr_lex_type == Lex::INT)
+// <variable> -> <identifier> | <identifier> "=" <constant>
+// <constant> -> <integer> | <string> | <logical>
+void Parser::variable(Ident::var_type var_type) {
+    if (curr_lex_type == Lex::IDENT) {
+        // put ident in table of idents
+        const char * var_name = curr_lex_value;
+        Ident * ident = NULL;
+        int index = -1;
+        
+        switch (var_type) {
+            case Ident::INT:
+                ident = new IntIdent(var_name);
+                if ((index = TID.put(ident)))
+                    throw curr_lex; // double declaration error
+                break;
+            case Ident::STR:
+                ident = new StringIdent(var_name);
+                if ((index = TID.put(ident)))
+                    throw curr_lex; // double declaration error
+                break;
+            case Ident::BOOL:
+                ident = new BoolIdent(var_name);
+                if ((index = TID.put(ident)))
+                    throw curr_lex; // double declaration error
+                break;
+            default:
+                throw curr_lex; // no need for this throw ???
+                break;
+        }
+        
         get_lex();
-    if (curr_lex_type == Lex::STRING_TYPE)
-        get_lex();
-    if (curr_lex_type == Lex::BOOLEAN)
-        get_lex();
-    else
-        throw curr_lex;
+        if (curr_lex_type == Lex::ASSIGN) {
+            get_lex();
+            if  (((var_type == Ident::INT) || (curr_lex_type == Lex::NUM)) ||
+                ((var_type == Ident::STR) || (curr_lex_type == Lex::STRING))  ||
+                ((var_type == Ident::BOOL) || (curr_lex_type == Lex::_TRUE) || (curr_lex_type == Lex::_FALSE))) {
+                ident->put_value(curr_lex_value);
+            }
+        }
+    }
 }
 
+// <operators> -> { <_operator> }
+/* <_operator> ->   "if"    "("<expression>")" <_operator> else <_operator> |
+                    "while" "("<expression>")" <_operator>                  |
+                    "read"  "("<identifier>")" ";"                          |
+                    "write" "("<expression> { ","<expression> }")" ";"      |
+                    <composite_operator> | <expression_operator>
+   <composite_operator>   -> "{"<_operator>"}"
+   <expression_operator>  -> <expression>
+*/
 
 //======================================================================================================================================================
 
@@ -170,216 +229,3 @@ int main(int argc, const char * argv[]) {
     
     return 0;
 }
-
-
-//const char * type_of_lex_readable[] = {
-//    "NULL", "FIN",
-//    "NUM", "IDENT", "STRING",
-//    "PROGRAM", "WRITE", "READ", "AND", "OR", "NOT", "IF", "CASE", "OF", "END", "DO", "WHILE", "FOR", "UNTIL", "CONTINUE", "BREAK", "TRUE", "FALSE",
-//    "INT", "REAL", "BOOLEAN", "STRING_TYPE", "GOTO",
-//    "COLON", "SEMICOLON", "COMMA", "OPEN_PAREN", "CLOSE_PAREN", "OPEN_BRACES", "CLOSE_BRACES", "PLUS", "MINUS", "MUL", "DIV", "BIGGER", "LESS", "ASSIGN", "BIGGER_EQUAL", "LESS_EQUAL", "EQUAL", "NOT_EQUAL", "QOUTE"
-//};
-
-//---------------------------------| Lex |-------------------------------------
-//class Lex {
-//
-//public:
-//    enum type_of_lex {
-//        _NULL, FIN,
-//        NUM, IDENT, STRING,
-//        PROGRAM, WRITE, READ, AND, OR, NOT, IF, CASE, OF, END, DO, WHILE, FOR, UNTIL, CONTINUE, BREAK, _TRUE, _FALSE,
-//        INT, REAL, BOOLEAN, STRING_TYPE, GOTO,
-//        COLON, SEMICOLON, COMMA, OPEN_PAREN, CLOSE_PAREN, OPEN_BRACES, CLOSE_BRACES, PLUS, MINUS, MUL, DIV, BIGGER, LESS, ASSIGN, BIGGER_EQUAL, LESS_EQUAL, EQUAL, NOT_EQUAL, QOUTE, L_COM, R_COM
-//    };
-//    Lex(type_of_lex type = _NULL, const char * value = NULL);
-//    type_of_lex get_type();
-//    char * get_value();
-//    friend std::ostream & operator << (std::ostream & s, Lex lex);
-//
-//private:
-//    type_of_lex lex_type;
-//    char        lex_value[buf_size];
-//};
-
-//---------------------------------| Lex |-------------------------------------
-
-//Lex::type_of_lex Lex::get_type() { return lex_type; }
-//char * Lex::get_value() { return lex_value; }
-//
-//Lex::Lex(type_of_lex type, const char * value) {
-//    lex_type = type;
-//    if (value)
-//        strcpy(lex_value, value);
-//    else lex_value[0] = '\0';
-//}
-//
-//std::ostream & operator << (std::ostream & s, Lex lex) {
-//    s << "(" << type_of_lex_readable[lex.lex_type] << ", " << lex.lex_value << "), ";
-//    return s;
-//}
-
-//-------------------------------| Lexer |--------------------------------------
-//class Lexer {
-//
-//public:
-//    Lexer(const char * program_file_path);
-//    ~Lexer() { fclose(fp); }
-//    Lex get_lex();
-//
-//private:
-//    void  read_char();
-//    void  clear();
-//    int   look(const char * buf, const char ** list);
-//    void  add_char();
-//
-//private:
-//    FILE* fp;
-//    char  c;
-//    char  buf[buf_size];
-//    int   buf_top;
-//    enum  state {H, LITERAL, NUM, DELIM, STRING, COMMENT, ALE};
-//    state CS;
-//    static const char * Reserved_Table[];
-//    static const char * Delim_Table[];
-//
-//};
-//-------------------------------| Lexer |--------------------------------------
-
-//void  Lexer::read_char() { c = fgetc(fp); }
-//
-//
-//const char * Lexer::Reserved_Table[] = {"program", "write", "read", "and", "or", "not", "if", "case", "of", "end", "do", "while", "for", "until", "continue", "break", "true", "false", "int", "real", "boolean", "string", "goto", NULL}; // change when new Lex is added in type_of_lex!!!!!"
-//const char * Lexer::Delim_Table[] = {":",";", ",", "(", ")", "{", "}", "+", "-", "*", "/", ">", "<", "=", ">=", "<=", "==", "!=", "\"", "#", NULL}; // change when new Lex is added in type_of_lex!!!!!
-//
-//Lexer::Lexer(const char * program_file_path) {
-//    fp = fopen(program_file_path, "r");
-//    if (!fp)
-//        std::cout << "file not found!!!\n";
-//    CS = H;
-//    buf_top = 0;
-//    read_char();
-//}
-//
-//void  Lexer::add_char() {
-//    if (buf_top >= buf_size)
-//        throw -1;
-//    buf[buf_top++] = c;
-//}
-//
-//void Lexer::clear() {
-//    buf_top = 0;
-//    for (int i = 0; i < buf_size; i++)
-//        buf[i] = '\0';
-//}
-//
-//int Lexer::look(const char * buf, const char ** list) {
-//    int i = 0;
-//    while(list[i]) {
-//        if (!strcmp(buf, list[i]))
-//            return i;
-//        i++;
-//    }
-//    return -1;
-//}
-//
-//Lex Lexer::get_lex() {
-//    CS = H;
-//    int index;
-//    while(true) {
-//        if (feof(fp)) {
-//            if (CS == STRING)
-//                throw Lex::STRING;
-//            if (CS == COMMENT)
-//                throw -2;
-//            return Lex(Lex::FIN);
-//        }
-//        switch (CS) { /* dfg */
-//            case H:
-//                if ((c == ' ') || (c == '\n') || (c == '\t') || (c == '\r')) {
-//                    read_char();
-//                    break;
-//                }
-//                else
-//                if (isalpha(c)) {
-//                    clear(); add_char(); read_char(); CS = LITERAL;
-//                    break;
-//                }
-//                else
-//                if (isdigit(c)) {
-//                    clear(); add_char(); read_char(); CS = NUM;
-//                    break;
-//                }
-//                if ((c == '>') || (c == '<') || (c == '=') || (c == '!')) {
-//                    clear(); add_char(); read_char(); CS = ALE;
-//                    break;
-//                }
-//                if (c == '"') {
-//                    clear(); read_char(); CS = STRING;
-//                    break;
-//                }
-//                if (c == '#') {
-//                    clear(); read_char(); CS = COMMENT;
-//                    break;
-//                }
-//                else
-//                    clear(); add_char(); read_char(); CS = DELIM;
-//                break;
-//
-//            case LITERAL:
-//                if (isalpha(c) || isdigit(c)) {
-//                    add_char(); read_char();
-//                }
-//                else
-//                if ((index = look(buf, Reserved_Table)) >= 0) return Lex(Lex::type_of_lex(Lex::PROGRAM + index));
-//                else return Lex(Lex::IDENT, buf);
-//                break;
-//
-//            case NUM:
-//                if (isdigit(c)) {
-//                    add_char(); read_char();
-//                }
-//                if (isalpha(c)) {
-//                    throw Lex::NUM;
-//                }
-//                else return Lex(Lex::NUM, buf);
-//                break;
-//
-//            case ALE:
-//                if (c == '=') {
-//                    add_char();
-//                    read_char();
-//                }
-//                if ((index = look(buf, Delim_Table)) >= 0) return Lex(Lex::type_of_lex(Lex::COLON + index));
-//                throw c;
-//                break;
-//
-//            case DELIM:
-//                if ((index = look(buf, Delim_Table)) >= 0) return Lex(Lex::type_of_lex(Lex::COLON + index));
-//                throw c;
-//                break;
-//
-//            case STRING:
-//                if (c != '"') {
-//                    add_char(); read_char();
-//                }
-//                else {
-//                    read_char();
-//                    return Lex(Lex::STRING, buf);
-//                }
-//                break;
-//
-//            case COMMENT:
-//                if (c != '#') {
-//                    add_char(); read_char();
-//                }
-//                else {
-//                    read_char();
-//                    CS = H;
-//                }
-//                break;
-//
-//            default:
-//                break;
-//        }
-//    }
-//}

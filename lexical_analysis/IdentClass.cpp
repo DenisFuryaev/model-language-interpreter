@@ -16,10 +16,15 @@ Ident::Ident(const char * name) {
 
 char * Ident::get_name() { return name; }
 
-char * StingIdent::get_value() { return value; }
-int      IntIdent::get_value() { return value; }
+char *  StringIdent::get_value() { return value; }
+int     IntIdent::get_value() { return value; }
 bool    BoolIdent::get_value() { return value; }
 
-void StingIdent::put_value(const char * value)  { strcpy(this->value, value); }
-void   IntIdent::put_value(int value)           { this->value = value; }
-void  BoolIdent::put_value(bool value)          { this->value = value; }
+void    StringIdent::put_value(const char * value) { strcpy(this->value, value); }
+void    IntIdent::put_value(const char * value) { this->value = atoi(value); }
+void    BoolIdent::put_value(const char * value) {
+    if (!strcmp(value, "true"))
+        this->value = true;
+    else
+        this->value = false;
+}
