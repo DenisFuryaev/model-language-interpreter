@@ -1,4 +1,5 @@
 program {
 	int g, a = 1,v = 8;
 	string str= "dsfg"; 
+	boolean bool = true;
 }

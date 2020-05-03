@@ -9,6 +9,8 @@
 #include <stdio.h>
 
 #include "IdentClass.hpp"
+#include <string>
+#include <iostream>
 
 Ident::Ident(const char * name) {
     strcpy(this->name, name);
@@ -28,3 +30,12 @@ void    BoolIdent::put_value(const char * value) {
     else
         this->value = false;
 }
+
+//const char* StringIdent::get_str_value() { return value; }
+//const char* IntIdent::get_str_value() { return to_string(value); }
+//const char* BoolIdent::get_str_value() {
+//    if (!strcmp(value, "true"))
+//        return "true";
+//    else
+//        return "false";
+//}
