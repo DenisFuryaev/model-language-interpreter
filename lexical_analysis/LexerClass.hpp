@@ -13,15 +13,26 @@
 #include <iostream>
 
 #include "LexClass.hpp"
+#include "Exceptions.hpp"
 
 #define buf_size 50
+
+class LexExeption : public Exeption {
+public:
+    LexExeption(Lex::type_of_lex lex_type, const char * message = nullptr);
+    
+private:
+    const char * message;
+    Lex::type_of_lex lex_type;
+};
 
 class Lexer {
     
 public:
     Lexer(const char * program_file_path);
     ~Lexer() { fclose(fp); }
-    Lex get_lex();
+    Lex  get_lex();
+    void put_lex(Lex lex);
     
 private:
     void  read_char();
@@ -37,6 +48,7 @@ private:
     int   buf_top;
     enum  state {H, LITERAL, NUM, DELIM, STRING, COMMENT, ALE};
     state CS;
+    Lex   pocket;
     static const char * Reserved_Table[];
     static const char * Delim_Table[];
     

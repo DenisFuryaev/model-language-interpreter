@@ -1,8 +1,4 @@
 program {
-	string str = "hello";
-# commet wow so cool 123 #
-	boolean b = (true <= false);
-top:
-	write ("hello");		
-	goto top;
+	int g, a = 1,v = 8;
+	string str= "dsfg"; 
 }

@@ -11,15 +11,21 @@
 
 #include "LexerClass.hpp"
 
-void  Lexer::read_char() { c = fgetc(fp); }
+LexExeption::LexExeption(Lex::type_of_lex lex_type, const char * message)
+    : Exeption(message) {
+    this->lex_type = lex_type;
+}
 
+void  Lexer::read_char() { c = fgetc(fp); }
 
 const char * Lexer::Reserved_Table[] = {"program", "write", "read", "and", "or", "not", "if", "case", "of", "end", "do", "while", "for",
                                         "until", "continue", "break", "true", "false", "int", "real", "boolean", "string", "goto", NULL};           // change when new Lex is added in type_of_lex!!!!!"
 
 const char * Lexer::Delim_Table[] = {":",";", ",", "(", ")", "{", "}", "+", "-", "*", "/", ">", "<", "=", ">=", "<=", "==", "!=", "\"", "#", NULL}; // change when new Lex is added in type_of_lex!!!!!
 
-Lexer::Lexer(const char * program_file_path) {
+Lexer::Lexer(const char * program_file_path)
+    : pocket() {
+        
     fp = fopen(program_file_path, "r");
     if (!fp)
         std::cout << "file not found!!!\n";
@@ -30,7 +36,7 @@ Lexer::Lexer(const char * program_file_path) {
 
 void  Lexer::add_char() {
     if (buf_top >= buf_size)
-        throw -1;
+        throw Exeption("buffer overflow");
     buf[buf_top++] = c;
 }
 
@@ -50,15 +56,24 @@ int Lexer::look(const char * buf, const char ** list) {
     return -1;
 }
 
+void Lexer::put_lex(Lex lex) {
+    pocket = lex;
+}
+
 Lex Lexer::get_lex() {
+    if (pocket.get_type() != Lex::_NULL) {
+        Lex temp = pocket;
+        pocket = Lex::_NULL;
+        return temp;
+    }
     CS = H;
     int index;
     while(true) {
         if (feof(fp)) {
             if (CS == STRING)
-                throw Lex::STRING;
+                throw Exeption("string not closed");
             if (CS == COMMENT)
-                throw -2;
+                throw Exeption("comment not closed");
             return Lex(Lex::FIN);
         }
         switch (CS) { 
@@ -107,7 +122,7 @@ Lex Lexer::get_lex() {
                     add_char(); read_char();
                 }
                 if (isalpha(c)) {
-                    throw Lex::NUM;
+                    throw LexExeption(Lex::NUM, buf);
                 }
                 else return Lex(Lex::NUM, buf);
                 break;
@@ -118,12 +133,12 @@ Lex Lexer::get_lex() {
                     read_char();
                 }
                 if ((index = look(buf, Delim_Table)) >= 0) return Lex(Lex::type_of_lex(Lex::COLON + index));
-                throw c;
+                throw Exeption("double ident");
                 break;
             
             case DELIM:
                 if ((index = look(buf, Delim_Table)) >= 0) return Lex(Lex::type_of_lex(Lex::COLON + index));
-                throw c;
+                throw Exeption("no such ident");
                 break;
                 
             case STRING:

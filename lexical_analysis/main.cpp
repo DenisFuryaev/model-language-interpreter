@@ -13,6 +13,7 @@
 #include "LexerClass.hpp"
 #include "IdentClass.hpp"
 #include "Tabl_Ident_Class.hpp"
+#include "Exceptions.hpp"
 
 Tabl_Ident TID(100);
 
@@ -20,6 +21,7 @@ class Parser {
     
 public:
     Parser(const char * program_file_path): lexer(program_file_path){}
+    void analyze();
     
 private:
     Lexer lexer;
@@ -31,11 +33,10 @@ private:
 private:
     
     void get_lex();
-    void analyze();
     
     void program();
     void declarations();
-    void declaration();
+    bool declaration();
     //void type();
     void variable(Ident::var_type var_type);
     void constant();
@@ -76,51 +77,55 @@ private:
 
 
 void Parser::get_lex() {
-    curr_lex = lexer.get_lex();
+    try {
+        curr_lex = lexer.get_lex();
+    }
+    catch(LexExeption lex_exeption) {
+        std::cout << "unhandled error in lexer: " << lex_exeption.get_message() << std::endl;
+    }
+    catch(Exeption exeption) {
+        std::cout << "unhandled error in lexer: " << exeption.get_message() << std::endl;
+    }
     curr_lex_type = curr_lex.get_type();
     curr_lex_value = curr_lex.get_value();
 }
 
 void Parser::analyze() {
-    get_lex();
     program();
     std::cout << "successfully parsed" << std::endl;
 }
 
  // <program> ->  program "{" <declarations> <operators> "}"
 void Parser::program() {
-    if (curr_lex_type == Lex::PROGRAM)
-        get_lex();
-    else
-        throw curr_lex;
-    if (curr_lex_type == Lex::OPEN_BRACES)
-        get_lex();
-    else
-        throw curr_lex;
+    get_lex();
+    if (curr_lex_type != Lex::PROGRAM)
+        throw LexExeption(curr_lex.get_type(), curr_lex.get_value());
+    
+    get_lex();
+    if (curr_lex_type != Lex::OPEN_BRACES)
+        throw LexExeption(curr_lex.get_type(), curr_lex.get_value());
     
     declarations();
     operators();
     
+    get_lex();
     if (curr_lex_type == Lex::CLOSE_BRACES)
         get_lex();
     else
-        throw curr_lex;
+        throw LexExeption(curr_lex.get_type(), curr_lex.get_value());
     if (curr_lex_type != Lex::FIN)
-        throw curr_lex;
+        throw LexExeption(curr_lex.get_type(), curr_lex.get_value());
 }
 
 // <declarations> -> { <declaration>";" }
 void Parser::declarations() {
-    declaration();
-    if (curr_lex_type == Lex::SEMICOLON)
-        get_lex();
-    else
-        throw curr_lex;
+    while (declaration()) {}
 }
 
 // <declaration> -> <type> <variable> { ","<variable> }
 // <type>        -> "int" | "string" | "boolean"
-void Parser::declaration() {
+bool Parser::declaration() {
+    get_lex();
     Ident::var_type var_type;
     switch (curr_lex_type) {
         case Lex::INT:
@@ -133,42 +138,52 @@ void Parser::declaration() {
             var_type = Ident::BOOL;
             break;
         default:
-            throw curr_lex;
+            lexer.put_lex(curr_lex);
+            return false;
     }
     
-    variable(var_type);
-    
-    while (curr_lex_type == Lex::COMMA)
+    while (true) {
         variable(var_type);
+        get_lex();
+        if (curr_lex_type != Lex::COMMA) {
+            lexer.put_lex(curr_lex);
+            break;
+        }
+    }
+    
+    get_lex();
+    if (curr_lex_type != Lex::SEMICOLON)
+        throw LexExeption(curr_lex.get_type(), curr_lex.get_value());
+    return true;
 }
 
 // <variable> -> <identifier> | <identifier> "=" <constant>
 // <constant> -> <integer> | <string> | <logical>
 void Parser::variable(Ident::var_type var_type) {
+    get_lex();
     if (curr_lex_type == Lex::IDENT) {
         // put ident in table of idents
         const char * var_name = curr_lex_value;
         Ident * ident = NULL;
-        int index = -1;
         
         switch (var_type) {
             case Ident::INT:
                 ident = new IntIdent(var_name);
-                if ((index = TID.put(ident)))
-                    throw curr_lex; // double declaration error
+                if (!TID.put(ident))
+                    throw Exeption("double declaration"); // double declaration error
                 break;
             case Ident::STR:
                 ident = new StringIdent(var_name);
-                if ((index = TID.put(ident)))
-                    throw curr_lex; // double declaration error
+                if (!TID.put(ident))
+                    throw Exeption("double declaration"); // double declaration error
                 break;
             case Ident::BOOL:
                 ident = new BoolIdent(var_name);
-                if ((index = TID.put(ident)))
-                    throw curr_lex; // double declaration error
+                if (!TID.put(ident))
+                    throw Exeption("double declaration"); // double declaration error
                 break;
             default:
-                throw curr_lex; // no need for this throw ???
+                throw LexExeption(curr_lex.get_type(), curr_lex.get_value()); // no need for this throw ???
                 break;
         }
         
@@ -180,8 +195,12 @@ void Parser::variable(Ident::var_type var_type) {
                 ((var_type == Ident::BOOL) || (curr_lex_type == Lex::_TRUE) || (curr_lex_type == Lex::_FALSE))) {
                 ident->put_value(curr_lex_value);
             }
+            else
+                lexer.put_lex(curr_lex);
         }
+        else lexer.put_lex(curr_lex);
     }
+    else throw LexExeption(curr_lex.get_type(), curr_lex.get_value());
 }
 
 // <operators> -> { <_operator> }
@@ -194,38 +213,27 @@ void Parser::variable(Ident::var_type var_type) {
    <expression_operator>  -> <expression>
 */
 
+void Parser::operators(){}
+void Parser::_operator(){}
+void Parser::composite_operator(){}
+void Parser::expression_operator(){}
+
 //======================================================================================================================================================
 
 int main(int argc, const char * argv[]) {
     
-    Lexer lexer("program.txt");
+    //Lexer lexer("program.txt");
     Lex lex;
-    do {
-        try {
-            lex = lexer.get_lex();
-        }
-        catch (Lex::type_of_lex lex_type){
-            //std::cerr << "unhandled error in: " << type_of_lex_readable[lex_type] << std::endl;
-            
-            // why does main cpp program don't khow about type_of_lex_readable ??????
-            
-            std::cerr << "unhandled error in: " << lex_type << std::endl;
-            break;
-        }
-        catch (char c){
-            std::cerr << "unhandled error in char: " << c << std::endl;
-            break;
-        }
-        catch (int x){
-            if (x == -1)
-                std::cerr << "unhandled error: buffer overflow" << std::endl;
-            if (x == -2)
-                std::cerr << "unhandled error: comment does not closedÇ" << std::endl;
-            break;
-        }
-        std::cout << lex;
-    }   while(lex.get_type() != Lex::FIN);
-    std::cout << "\n";
+    Parser parser("program.txt");
+    try {
+        parser.analyze();
+    }
+    catch (Exeption exeption) {
+        std::cerr << "unhandled error: " << exeption.get_message() << std::endl;
+    }
+
+    
+    TID.print();
     
     return 0;
 }

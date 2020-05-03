@@ -30,3 +30,9 @@ int Tabl_Ident::put(Ident * ident) {
     top++;
     return top - 1;
 }
+
+void Tabl_Ident::print() {
+    for (int i = 1; i < top; i++) {
+        std::cout << pointer[i]->get_type() <<  pointer[i]->get_name() << std::endl;
+    }
+}

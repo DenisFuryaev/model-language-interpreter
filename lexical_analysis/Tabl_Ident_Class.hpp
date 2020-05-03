@@ -20,6 +20,7 @@ public:
     ~Tabl_Ident();
     Ident * operator[](int k);
     int put(Ident * ident);
+    void print();
     
 private:
     Ident ** pointer;
