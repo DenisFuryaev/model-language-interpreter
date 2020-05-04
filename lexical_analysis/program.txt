@@ -1,7 +1,4 @@
 program {
-	int a, b = 1,c = 8;
-	if (b < c) 
-		a = 1;
-	else
-		a = 0;
+	int a, b, c;
+	a = (a - b)*c;
 }

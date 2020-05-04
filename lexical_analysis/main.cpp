@@ -34,6 +34,7 @@ private:
 private:
     
     void get_lex();
+    void expect(Lex::type_of_lex lex_type, const char * error_message);
     
     void program();
     void declarations();
@@ -46,13 +47,13 @@ private:
     void string();
     void logical();
     void operators();
-    void _operator();
+    bool _operator();
     void composite_operator();
-    void expression_operator();
-    void expression();
-    void expression_1();
-    void T();
-    void F();
+    bool expression_operator();
+    bool expression();
+    bool expression_1();
+    bool T();
+    bool F();
     
 };
 //------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -74,6 +75,7 @@ private:
                     "while" "("<expression>")" <_operator>                  |
                     "read"  "("<identifier>")" ";"                          |
                     "write" "("<expression> { ","<expression> }")" ";"      |
+                    "for"   "("[<expression>]";"[<expression>]";"[<expression>]")" <_operator> |
                     <composite_operator> | <expression_operator>
  <composite_operator>   -> "{"<_operator>"}"
  <expression_operator>  -> <expression>";"
@@ -97,6 +99,12 @@ void Parser::get_lex() {
     }
     curr_lex_type = curr_lex.get_type();
     curr_lex_value = curr_lex.get_value();
+}
+
+void Parser::expect(Lex::type_of_lex lex_type, const char * error_message) {
+    get_lex();
+    if (curr_lex_type != lex_type)
+        throw Exeption(error_message);
 }
 
 void Parser::analyze() {
@@ -230,62 +238,116 @@ void Parser::variable(Ident::var_type var_type) {
 */
 
 void Parser::operators() {
-    _operator();
+    while(_operator()) {}
 }
 
-void Parser::_operator() {
+bool Parser::_operator() {
     
     get_lex();
-    if (curr_lex_type == Lex::IF) {
-        
-        get_lex();
-        if (curr_lex_type != Lex::OPEN_PAREN)
-            throw Exeption("_operator: expected OPEN_PAREN");
+    switch (curr_lex_type) {
+
+        // "if" "(" <expression> ")" <_operator> else <_operator>
+        case Lex::IF:
             
-        expression();
+            expect(Lex::OPEN_PAREN, "_operator IF: expected OPEN_PAREN");
+            expression();
+            expect(Lex::CLOSE_PAREN, "_operator IF: expected CLOSE_PAREN");
+            _operator();
+            expect(Lex::ELSE, "_operator IF: expected ELSE");
+            _operator();
+            
+            return true;
+            break;
+            
+        // "for" "(" [<expression>] ";" [<expression>] ";" [<expression>] ")" <_operator>
+        case Lex::FOR:
         
-        get_lex();
-        if (curr_lex_type != Lex::CLOSE_PAREN)
-            throw Exeption("_operator: expected CLOSE_PAREN");
+            expect(Lex::OPEN_PAREN, "_operator FOR: expected OPEN_PAREN");
+            expression();
+            expect(Lex::SEMICOLON, "_operator FOR: expected SEMICOLON");
+            expression();
+            expect(Lex::SEMICOLON, "_operator FOR: expected SEMICOLON");
+            expression();
+            expect(Lex::CLOSE_PAREN, "_operator FOR: expected CLOSE_PAREN");
+            _operator();
         
-        _operator();
-        
-        get_lex();
-        if (curr_lex_type != Lex::ELSE)
-            throw Exeption("_operator: expected ELSE");
-        
-        _operator();
+            return true;
+            break;
+            
+        // "while" "(" <expression> ")" <_operator>
+        case Lex::WHILE:
+            
+            expect(Lex::OPEN_PAREN, "_operator WHILE: expected OPEN_PAREN");
+            expression();
+            expect(Lex::CLOSE_PAREN, "_operator WHILE: expected CLOSE_PAREN");
+            _operator();
+            
+            return true;
+            break;
+            
+        // "read" "(" <identifier> ")" ";"
+        case Lex::READ:
+            
+            expect(Lex::OPEN_PAREN, "_operator READ: expected OPEN_PAREN");
+            expect(Lex::IDENT, "_operator READ: expected IDENT");
+            expect(Lex::CLOSE_PAREN, "_operator READ: expected CLOSE_PAREN");
+            expect(Lex::SEMICOLON, "_operator READ: expected SEMICOLON");
+            
+            return true;
+            break;
+            
+        // "write" "(" <expression> { "," <expression> }" )" ";"
+        case Lex::WRITE:
+            expect(Lex::OPEN_PAREN, "_operator WRITE: expected OPEN_PAREN");
+            while (true) {
+                expression();
+                get_lex();
+                if (curr_lex_type != Lex::COMMA) {
+                    lexer.put_lex(curr_lex);
+                    break;
+                }
+            }
+            expect(Lex::CLOSE_PAREN, "_operator WRITE: expected CLOSE_PAREN");
+            expect(Lex::SEMICOLON, "_operator WRITE: expected SEMICOLON");
+            
+            return true;
+            break;
+            
+        case Lex::OPEN_BRACES:
+            lexer.put_lex(curr_lex);
+            composite_operator();
+            return true;
+            break;
+            
+        default:
+            lexer.put_lex(curr_lex);
+            bool result = expression_operator();
+            return result;
+            break;
     }
-    else
-    if (curr_lex_type == Lex::WHILE) {
-    }
-    else
-    if (curr_lex_type == Lex::READ) {
-    }
-    else
-    if (curr_lex_type == Lex::WRITE) {
-    }
-    else
-    if (curr_lex_type == Lex::OPEN_BRACES) {
-        lexer.put_lex(curr_lex);
-        composite_operator();
-    }
-    else {
-        lexer.put_lex(curr_lex);
-        expression_operator();
-    }
+    
+    
 }
 
+// <composite_operator> -> "{" <operators> "}"
 void Parser::composite_operator() {
-    _operator();
+    
+    expect(Lex::OPEN_BRACES, "composite_operator: expected OPEN_BRACES");
+    operators();
+    expect(Lex::CLOSE_BRACES, "composite_operator: expected CLOSE_BRACES");
 }
 
-void Parser::expression_operator() {
-    expression();
+// <expression_operator> -> <expression>";"
+bool Parser::expression_operator() {
+    bool result = expression();
+    if (!result)
+        return result;
     
     get_lex();
     if (curr_lex_type != Lex::SEMICOLON)
         throw Exeption("expression_operator: SEMICOLON missing");
+    
+    return result;
 }
 
 
@@ -300,8 +362,10 @@ void Parser::expression_operator() {
 
 
 // <expression> -> <expression_1> [ "<" | ">" | "!=" | "<=" | ">=" | "==" ] <expression_1> | <expression_1>
-void Parser::expression() {
-    expression_1();
+bool Parser::expression() {
+    bool result = expression_1();
+    if (!result)
+        return result;
     
     get_lex();
     if ((curr_lex_type == Lex::LESS) || (curr_lex_type == Lex::BIGGER) || (curr_lex_type == Lex::NOT_EQUAL) ||
@@ -309,11 +373,15 @@ void Parser::expression() {
         expression_1();
     else
         lexer.put_lex(curr_lex);
+    
+    return result;
 }
 
 // <expression1_> -> <T> { [ "+" | "-" | "or" | "=" ] <T> }
-void Parser::expression_1() {
-    T();
+bool Parser::expression_1() {
+    bool result =  T();
+    if (!result)
+        return result;
     
     while (true) {
         get_lex();
@@ -324,12 +392,14 @@ void Parser::expression_1() {
             break;
         }
     }
-    
+    return result;
 }
 
 // <T> -> <F> { [ "*" | "/" | "and" ] <F> }
-void Parser::T() {
-    F();
+bool Parser::T() {
+    bool result = F();
+    if (!result)
+        return result;
     
     while (true) {
         get_lex();
@@ -340,45 +410,49 @@ void Parser::T() {
             break;
         }
     }
+    return result;
 }
 
 // <F> -> <identifier> | <number> | <L> | "not" <F> | "("<expression>")"
 // <L> -> "true" | "false"
-void Parser::F() {
+bool Parser::F() {
     
     get_lex();
-    if (curr_lex_type == Lex::IDENT) {
+    switch (curr_lex_type) {
+        case Lex::IDENT:
+            
+            break;
+            
+        case Lex::NUM:
         
-    }
-    else
-    if (curr_lex_type == Lex::NUM) {
+            break;
+            
+        case Lex::_TRUE:
         
-    }
-    else
-    if (curr_lex_type == Lex::_TRUE) {
+            break;
+            
+        case Lex::_FALSE:
         
-    }
-    else
-    if (curr_lex_type == Lex::_FALSE) {
+            break;
+            
+        case Lex::NOT:
         
+            break;
+            
+        case Lex::OPEN_PAREN:
+            expression();
+            if (curr_lex_type != Lex::CLOSE_PAREN)
+                throw Exeption("F: CLOSE_PAREN missing");
+            break;
+            
+        default:
+            lexer.put_lex(curr_lex);
+            return false;
+            //throw Exeption("F: member error");
+            //break;
     }
-    else
-    if (curr_lex_type == Lex::NOT) {
-        F();
-    }
-    else
-    if (curr_lex_type == Lex::IDENT) {
-        
-    }
-    else
-    if (curr_lex_type == Lex::OPEN_PAREN) {
-        expression();
-        if (curr_lex_type != Lex::CLOSE_PAREN)
-            throw Exeption("F: CLOSE_PAREN missing");
-    }
-    else
-        throw Exeption("F: member error");
-        
+    
+    return true;
 }
 
 //======================================================================================================================================================
