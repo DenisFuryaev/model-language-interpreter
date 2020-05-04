@@ -1,5 +1,7 @@
 program {
-	int g, a = 1,v = 8;
-	string str= "dsfg"; 
-	boolean bool = true;
+	int a, b = 1,c = 8;
+	if (b < c) 
+		a = 1;
+	else
+		a = 0;
 }

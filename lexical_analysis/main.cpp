@@ -14,6 +14,7 @@
 #include "IdentClass.hpp"
 #include "Tabl_Ident_Class.hpp"
 #include "Exceptions.hpp"
+#include "Poliz.hpp"
 
 Tabl_Ident TID(100);
 
@@ -48,6 +49,10 @@ private:
     void _operator();
     void composite_operator();
     void expression_operator();
+    void expression();
+    void expression_1();
+    void T();
+    void F();
     
 };
 //------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -71,8 +76,12 @@ private:
                     "write" "("<expression> { ","<expression> }")" ";"      |
                     <composite_operator> | <expression_operator>
  <composite_operator>   -> "{"<_operator>"}"
- <expression_operator>  -> <expression>
- 
+ <expression_operator>  -> <expression>";"
+ <expression>   -> <expression_1> [ "<" | ">" | "!=" | "<=" | ">=" | "==" ] <expression_1> | <expression_1>
+ <expression1_> -> <T> { [ "+" | "-" | "or" ] <T> }
+ <T>            -> <F> { [ "*" | "/" | "and" ] <F> }
+ <F>            -> <identifier> | <number> | <L> | "not" <F> | "("<expression>")"
+ <L>            -> "true" | "false"
 */
 
 
@@ -203,20 +212,174 @@ void Parser::variable(Ident::var_type var_type) {
     else throw LexExeption(curr_lex.get_type(), curr_lex.get_value());
 }
 
-// <operators> -> { <_operator> }
-/* <_operator> ->   "if"    "("<expression>")" <_operator> else <_operator> |
+/*
+    <operators> -> { <_operator> }
+    <_operator> ->  "if"    "("<expression>")" <_operator> else <_operator> |
                     "while" "("<expression>")" <_operator>                  |
                     "read"  "("<identifier>")" ";"                          |
                     "write" "("<expression> { ","<expression> }")" ";"      |
-                    <composite_operator> | <expression_operator>
-   <composite_operator>   -> "{"<_operator>"}"
-   <expression_operator>  -> <expression>
+                    <composite_operator> |
+                    <expression_operator>
+    <composite_operator>  -> "{"<_operator>"}"
+    <expression_operator> -> <expression>";"
+    <expression>   -> <expression_1> [ "<" | ">" | "!=" | "<=" | ">=" | "=="] <expression_1> | <expression_1>
+    <expression1_> -> <T> { [ "+" | "-" | "or" | "="] <T> }
+    <T>            -> <F> { [ "*" | "/" | "and" ] <F> }
+    <F>            -> <identifier> | <number> | <L> | "not" <F> | "("<expression>")"
+    <L>            -> "true" | "false"
 */
 
-void Parser::operators(){}
-void Parser::_operator(){}
-void Parser::composite_operator(){}
-void Parser::expression_operator(){}
+void Parser::operators() {
+    _operator();
+}
+
+void Parser::_operator() {
+    
+    get_lex();
+    if (curr_lex_type == Lex::IF) {
+        
+        get_lex();
+        if (curr_lex_type != Lex::OPEN_PAREN)
+            throw Exeption("_operator: expected OPEN_PAREN");
+            
+        expression();
+        
+        get_lex();
+        if (curr_lex_type != Lex::CLOSE_PAREN)
+            throw Exeption("_operator: expected CLOSE_PAREN");
+        
+        _operator();
+        
+        get_lex();
+        if (curr_lex_type != Lex::ELSE)
+            throw Exeption("_operator: expected ELSE");
+        
+        _operator();
+    }
+    else
+    if (curr_lex_type == Lex::WHILE) {
+    }
+    else
+    if (curr_lex_type == Lex::READ) {
+    }
+    else
+    if (curr_lex_type == Lex::WRITE) {
+    }
+    else
+    if (curr_lex_type == Lex::OPEN_BRACES) {
+        lexer.put_lex(curr_lex);
+        composite_operator();
+    }
+    else {
+        lexer.put_lex(curr_lex);
+        expression_operator();
+    }
+}
+
+void Parser::composite_operator() {
+    _operator();
+}
+
+void Parser::expression_operator() {
+    expression();
+    
+    get_lex();
+    if (curr_lex_type != Lex::SEMICOLON)
+        throw Exeption("expression_operator: SEMICOLON missing");
+}
+
+
+/*
+ <expression>   -> <expression_1> [ "<" | ">" | "!=" | "<=" | ">=" | "==" ] <expression_1> | <expression_1>
+ <expression1_> -> <T> { [ "+" | "-" | "or" | "=" ] <T> }
+ <T>            -> <F> { [ "*" | "/" | "and" ] <F> }
+ <F>            -> <identifier> | <number> | <L> | "not" <F> | "("<expression>")"
+ <L>            -> "true" | "false"
+*/
+
+
+
+// <expression> -> <expression_1> [ "<" | ">" | "!=" | "<=" | ">=" | "==" ] <expression_1> | <expression_1>
+void Parser::expression() {
+    expression_1();
+    
+    get_lex();
+    if ((curr_lex_type == Lex::LESS) || (curr_lex_type == Lex::BIGGER) || (curr_lex_type == Lex::NOT_EQUAL) ||
+        (curr_lex_type == Lex::LESS_EQUAL) || (curr_lex_type == Lex::BIGGER_EQUAL) || (curr_lex_type == Lex::EQUAL))
+        expression_1();
+    else
+        lexer.put_lex(curr_lex);
+}
+
+// <expression1_> -> <T> { [ "+" | "-" | "or" | "=" ] <T> }
+void Parser::expression_1() {
+    T();
+    
+    while (true) {
+        get_lex();
+        if ((curr_lex_type == Lex::PLUS) || (curr_lex_type == Lex::MINUS) || (curr_lex_type == Lex::OR) || (curr_lex_type == Lex::ASSIGN))
+            T();
+        else {
+            lexer.put_lex(curr_lex);
+            break;
+        }
+    }
+    
+}
+
+// <T> -> <F> { [ "*" | "/" | "and" ] <F> }
+void Parser::T() {
+    F();
+    
+    while (true) {
+        get_lex();
+        if ((curr_lex_type == Lex::MUL) || (curr_lex_type == Lex::DIV) || (curr_lex_type == Lex::AND))
+            F();
+        else {
+            lexer.put_lex(curr_lex);
+            break;
+        }
+    }
+}
+
+// <F> -> <identifier> | <number> | <L> | "not" <F> | "("<expression>")"
+// <L> -> "true" | "false"
+void Parser::F() {
+    
+    get_lex();
+    if (curr_lex_type == Lex::IDENT) {
+        
+    }
+    else
+    if (curr_lex_type == Lex::NUM) {
+        
+    }
+    else
+    if (curr_lex_type == Lex::_TRUE) {
+        
+    }
+    else
+    if (curr_lex_type == Lex::_FALSE) {
+        
+    }
+    else
+    if (curr_lex_type == Lex::NOT) {
+        F();
+    }
+    else
+    if (curr_lex_type == Lex::IDENT) {
+        
+    }
+    else
+    if (curr_lex_type == Lex::OPEN_PAREN) {
+        expression();
+        if (curr_lex_type != Lex::CLOSE_PAREN)
+            throw Exeption("F: CLOSE_PAREN missing");
+    }
+    else
+        throw Exeption("F: member error");
+        
+}
 
 //======================================================================================================================================================
 
