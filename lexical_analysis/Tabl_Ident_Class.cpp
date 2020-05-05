@@ -33,6 +33,8 @@ int Tabl_Ident::put(Ident * ident) {
 
 void Tabl_Ident::print() {
     for (int i = 1; i < top; i++) {
-        std::cout << pointer[i]->get_type() << " "<<  pointer[i]->get_name() << std::endl;
+        std::cout << pointer[i]->get_type() << " " <<  pointer[i]->get_name() << " ";
+        pointer[i]->dump_str_value();
+        std::cout << std::endl;
     }
 }

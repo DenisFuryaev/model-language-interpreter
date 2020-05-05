@@ -24,7 +24,7 @@ public:
     char *  get_name();
     virtual var_type get_type() = 0;
     virtual void put_value(const char * value) = 0;
-    //virtual const char * get_str_value() = 0;
+    virtual void dump_str_value() = 0;
 
 private:
     char name[buf_size];
@@ -39,7 +39,7 @@ public:
     virtual var_type    get_type() { return Ident::STR; }
     char *              get_value();
     virtual void        put_value(const char * value);
-    //virtual const char* get_str_value();
+    virtual void        dump_str_value();
 
     
 private:
@@ -55,7 +55,7 @@ public:
     virtual var_type    get_type() { return Ident::INT; }
     int                 get_value();
     virtual void        put_value(const char * value);
-    //virtual const char* get_str_value();
+    virtual void        dump_str_value();
     
 private:
     int value;
@@ -70,7 +70,7 @@ public:
     virtual var_type    get_type() { return Ident::BOOL; }
     bool                get_value();
     virtual void        put_value(const char * value);
-    //virtual const char* get_str_value();
+    virtual void        dump_str_value();
     
 private:
     bool value;

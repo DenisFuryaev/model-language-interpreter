@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <stdio.h>
+#include <stack>
 
 #include "LexClass.hpp"
 #include "LexerClass.hpp"
@@ -21,8 +22,11 @@ Tabl_Ident TID(100);
 class Parser {
     
 public:
-    Parser(const char * program_file_path): lexer(program_file_path){}
+    Parser(const char * program_file_path): lexer(program_file_path), prog(1000){}
     void analyze();
+    
+public:
+    Poliz prog;
     
 private:
     Lexer lexer;
@@ -32,6 +36,8 @@ private:
     const char * curr_lex_value;
 
 private:
+    
+    std::stack <Lex::type_of_lex> st_lex;
     
     void get_lex();
     void expect(Lex::type_of_lex lex_type, const char * error_message);
@@ -51,6 +57,14 @@ private:
     void composite_operator();
     bool expression_operator();
     bool expression();
+    bool e1();
+    bool e2();
+    bool e3();
+    bool e4();
+    bool e5();
+    bool e6();
+    bool e7();
+    
     bool expression_1();
     bool T();
     bool F();
@@ -79,11 +93,15 @@ private:
                     <composite_operator> | <expression_operator>
  <composite_operator>   -> "{"<_operator>"}"
  <expression_operator>  -> <expression>";"
- <expression>   -> <expression_1> [ "<" | ">" | "!=" | "<=" | ">=" | "==" ] <expression_1> | <expression_1>
- <expression1_> -> <T> { [ "+" | "-" | "or" ] <T> }
- <T>            -> <F> { [ "*" | "/" | "and" ] <F> }
- <F>            -> <identifier> | <number> | <L> | "not" <F> | "("<expression>")"
- <L>            -> "true" | "false"
+ <expression> -> <e1> | <e1> "=" <e1>
+ <e1> -> <e2> | <e2> "or" <e2>
+ <e2> -> <e3> | <e3> "and" <e3>
+ <e3> -> <e4> | <e4> [ "<" | ">" | "!=" | "<=" | ">=" | "==" ] <e4>
+ <e4> -> <e5> | <e5> [ "+" | "-" ] <e5>
+ <e5> -> <e6> | <e6> [ "*" | "/" ] <e6>
+ <e6> -> <e7> | <e7> "not" <e7>
+ <e7> -> <identifier> | <number> | "true" | "false" | "("<expression>")"
+
 */
 
 
@@ -187,17 +205,17 @@ void Parser::variable(Ident::var_type var_type) {
             case Ident::INT:
                 ident = new IntIdent(var_name);
                 if (!TID.put(ident))
-                    throw Exeption("double declaration"); // double declaration error
+                    throw Exeption("variable: double declaration");
                 break;
             case Ident::STR:
                 ident = new StringIdent(var_name);
                 if (!TID.put(ident))
-                    throw Exeption("double declaration"); // double declaration error
+                    throw Exeption("variable: double declaration");
                 break;
             case Ident::BOOL:
                 ident = new BoolIdent(var_name);
                 if (!TID.put(ident))
-                    throw Exeption("double declaration"); // double declaration error
+                    throw Exeption("variable: double declaration");
                 break;
             default:
                 throw LexExeption(curr_lex.get_type(), curr_lex.get_value()); // no need for this throw ???
@@ -207,13 +225,14 @@ void Parser::variable(Ident::var_type var_type) {
         get_lex();
         if (curr_lex_type == Lex::ASSIGN) {
             get_lex();
-            if  (((var_type == Ident::INT) || (curr_lex_type == Lex::NUM)) ||
-                ((var_type == Ident::STR) || (curr_lex_type == Lex::STRING))  ||
-                ((var_type == Ident::BOOL) || (curr_lex_type == Lex::_TRUE) || (curr_lex_type == Lex::_FALSE))) {
+            if  (((var_type == Ident::INT) && (curr_lex_type == Lex::NUM)) ||
+                ((var_type == Ident::STR) && (curr_lex_type == Lex::STRING))  ||
+                ((var_type == Ident::BOOL) && ((curr_lex_type == Lex::_TRUE) || (curr_lex_type == Lex::_FALSE)))) {
                 ident->put_value(curr_lex_value);
             }
             else
-                lexer.put_lex(curr_lex);
+                throw Exeption("variable: const and ident type conflict");
+                //lexer.put_lex(curr_lex);
         }
         else lexer.put_lex(curr_lex);
     }
@@ -230,11 +249,6 @@ void Parser::variable(Ident::var_type var_type) {
                     <expression_operator>
     <composite_operator>  -> "{"<_operator>"}"
     <expression_operator> -> <expression>";"
-    <expression>   -> <expression_1> [ "<" | ">" | "!=" | "<=" | ">=" | "=="] <expression_1> | <expression_1>
-    <expression1_> -> <T> { [ "+" | "-" | "or" | "="] <T> }
-    <T>            -> <F> { [ "*" | "/" | "and" ] <F> }
-    <F>            -> <identifier> | <number> | <L> | "not" <F> | "("<expression>")"
-    <L>            -> "true" | "false"
 */
 
 void Parser::operators() {
@@ -350,72 +364,126 @@ bool Parser::expression_operator() {
     return result;
 }
 
-
 /*
- <expression>   -> <expression_1> [ "<" | ">" | "!=" | "<=" | ">=" | "==" ] <expression_1> | <expression_1>
- <expression1_> -> <T> { [ "+" | "-" | "or" | "=" ] <T> }
- <T>            -> <F> { [ "*" | "/" | "and" ] <F> }
- <F>            -> <identifier> | <number> | <L> | "not" <F> | "("<expression>")"
- <L>            -> "true" | "false"
+
+ <expression> -> <e1> | <e1> "=" <e1>
+ <e1> -> <e2> | <e2> "or" <e2>
+ <e2> -> <e3> | <e3> "and" <e3>
+ <e3> -> <e4> | <e4> [ "<" | ">" | "!=" | "<=" | ">=" | "==" ] <e4>
+ <e4> -> <e5> | <e5> [ "+" | "-" ] <e5>
+ <e5> -> <e6> | <e6> [ "*" | "/" ] <e6>
+ <e6> -> <e7> | <e7> "not" <e7>
+ <e7> -> <identifier> | <number> | "true" | "false" | "("<expression>")"
+ 
 */
 
-
-
-// <expression> -> <expression_1> [ "<" | ">" | "!=" | "<=" | ">=" | "==" ] <expression_1> | <expression_1>
 bool Parser::expression() {
-    bool result = expression_1();
+    bool result = e1();
+    if (!result)
+        return result;
+    
+    get_lex();
+    if (curr_lex_type == Lex::ASSIGN)
+        e1();
+    else
+        lexer.put_lex(curr_lex);
+    
+    return true;
+}
+
+// <e1> -> <e2> | <e2> "or" <e2>
+bool Parser::e1() {
+    bool result = e2();
+    if (!result)
+        return result;
+    
+    get_lex();
+    if (curr_lex_type == Lex::OR)
+        e2();
+    else
+        lexer.put_lex(curr_lex);
+    
+    return true;
+}
+
+// <e2> -> <e3> | <e3> "and" <e3>
+bool Parser::e2() {
+    bool result = e3();
+    if (!result)
+        return result;
+    
+    get_lex();
+    if (curr_lex_type == Lex::AND)
+        e3();
+    else
+        lexer.put_lex(curr_lex);
+    
+    return true;
+}
+
+// <e3> -> <e4> | <e4> [ "<" | ">" | "!=" | "<=" | ">=" | "==" ] <e4>
+bool Parser::e3() {
+    bool result = e4();
     if (!result)
         return result;
     
     get_lex();
     if ((curr_lex_type == Lex::LESS) || (curr_lex_type == Lex::BIGGER) || (curr_lex_type == Lex::NOT_EQUAL) ||
         (curr_lex_type == Lex::LESS_EQUAL) || (curr_lex_type == Lex::BIGGER_EQUAL) || (curr_lex_type == Lex::EQUAL))
-        expression_1();
+        e4();
     else
         lexer.put_lex(curr_lex);
     
-    return result;
+    return true;
 }
 
-// <expression1_> -> <T> { [ "+" | "-" | "or" | "=" ] <T> }
-bool Parser::expression_1() {
-    bool result =  T();
+// <e4> -> <e5> | <e5> [ "+" | "-" ] <e5>
+bool Parser::e4() {
+    bool result = e5();
     if (!result)
         return result;
     
-    while (true) {
-        get_lex();
-        if ((curr_lex_type == Lex::PLUS) || (curr_lex_type == Lex::MINUS) || (curr_lex_type == Lex::OR) || (curr_lex_type == Lex::ASSIGN))
-            T();
-        else {
-            lexer.put_lex(curr_lex);
-            break;
-        }
-    }
-    return result;
+    get_lex();
+    if ((curr_lex_type == Lex::PLUS) || (curr_lex_type == Lex::MINUS))
+        e5();
+    else
+        lexer.put_lex(curr_lex);
+    
+    return true;
 }
 
-// <T> -> <F> { [ "*" | "/" | "and" ] <F> }
-bool Parser::T() {
-    bool result = F();
+// <e5> -> <e6> | <e6> [ "*" | "/" ] <e6>
+bool Parser::e5() {
+    bool result = e6();
     if (!result)
         return result;
     
-    while (true) {
-        get_lex();
-        if ((curr_lex_type == Lex::MUL) || (curr_lex_type == Lex::DIV) || (curr_lex_type == Lex::AND))
-            F();
-        else {
-            lexer.put_lex(curr_lex);
-            break;
-        }
-    }
-    return result;
+    get_lex();
+    if ((curr_lex_type == Lex::MUL) || (curr_lex_type == Lex::DIV))
+        e6();
+    else
+        lexer.put_lex(curr_lex);
+    
+    return true;
 }
 
-// <F> -> <identifier> | <number> | <L> | "not" <F> | "("<expression>")"
-// <L> -> "true" | "false"
-bool Parser::F() {
+// <e6> -> <e7> | <e7> "not" <e7>
+bool Parser::e6() {
+    bool result = e7();
+    if (!result)
+        return result;
+    
+    get_lex();
+    if (curr_lex_type == Lex::NOT)
+        e7();
+    else
+        lexer.put_lex(curr_lex);
+    
+    return true;
+}
+
+// <e7> -> <identifier> | <number> | "true" | "false" | "("<expression>")"
+bool Parser::e7() {
     
     get_lex();
     switch (curr_lex_type) {
@@ -441,19 +509,17 @@ bool Parser::F() {
             
         case Lex::OPEN_PAREN:
             expression();
-            if (curr_lex_type != Lex::CLOSE_PAREN)
-                throw Exeption("F: CLOSE_PAREN missing");
+            expect(Lex::CLOSE_PAREN, "F: expected CLOSE_PAREN");
             break;
             
         default:
             lexer.put_lex(curr_lex);
             return false;
-            //throw Exeption("F: member error");
-            //break;
     }
     
     return true;
 }
+
 
 //======================================================================================================================================================
 

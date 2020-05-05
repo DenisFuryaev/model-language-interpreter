@@ -121,6 +121,7 @@ Lex Lexer::get_lex() {
                 if (isdigit(c)) {
                     add_char(); read_char();
                 }
+                else
                 if (isalpha(c)) {
                     throw LexExeption(Lex::NUM, buf);
                 }

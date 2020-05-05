@@ -31,11 +31,11 @@ void    BoolIdent::put_value(const char * value) {
         this->value = false;
 }
 
-//const char* StringIdent::get_str_value() { return value; }
-//const char* IntIdent::get_str_value() { return to_string(value); }
-//const char* BoolIdent::get_str_value() {
-//    if (!strcmp(value, "true"))
-//        return "true";
-//    else
-//        return "false";
-//}
+void StringIdent::dump_str_value() { std::cout << value; }
+void IntIdent::dump_str_value() { std::cout << std::to_string(value); }
+void BoolIdent::dump_str_value() {
+    if (value)
+        std::cout << "true";
+    else
+        std::cout << "false";
+}
