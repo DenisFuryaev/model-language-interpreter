@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <stdio.h>
+#include <stdlib.h>
 #include <stack>
 
 #include "LexClass.hpp"
@@ -41,11 +42,11 @@ private:
     
     void get_lex();
     void expect(Lex::type_of_lex lex_type, const char * error_message);
+    void check_op();
     
     void program();
     void declarations();
     bool declaration();
-    //void type();
     void variable(Ident::var_type var_type);
     void constant();
     void integer();
@@ -64,10 +65,6 @@ private:
     bool e5();
     bool e6();
     bool e7();
-    
-    bool expression_1();
-    bool T();
-    bool F();
     
 };
 //------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -128,6 +125,7 @@ void Parser::expect(Lex::type_of_lex lex_type, const char * error_message) {
 void Parser::analyze() {
     program();
     std::cout << "successfully parsed" << std::endl;
+    prog.print();
 }
 
  // <program> ->  program "{" <declarations> <operators> "}"
@@ -241,10 +239,10 @@ void Parser::variable(Ident::var_type var_type) {
 
 /*
     <operators> -> { <_operator> }
-    <_operator> ->  "if"    "("<expression>")" <_operator> else <_operator> |
-                    "while" "("<expression>")" <_operator>                  |
-                    "read"  "("<identifier>")" ";"                          |
-                    "write" "("<expression> { ","<expression> }")" ";"      |
+    <_operator> ->  "if"    "("<expression>")" <_operator> [else <_operator>]   |
+                    "while" "("<expression>")" <_operator>                      |
+                    "read"  "("<identifier>")" ";"                              |
+                    "write" "("<expression> { ","<expression> }")" ";"          |
                     <composite_operator> |
                     <expression_operator>
     <composite_operator>  -> "{"<_operator>"}"
@@ -256,6 +254,7 @@ void Parser::operators() {
 }
 
 bool Parser::_operator() {
+    int pl0, pl1, pl2, pl3;
     
     get_lex();
     switch (curr_lex_type) {
@@ -266,9 +265,25 @@ bool Parser::_operator() {
             expect(Lex::OPEN_PAREN, "_operator IF: expected OPEN_PAREN");
             expression();
             expect(Lex::CLOSE_PAREN, "_operator IF: expected CLOSE_PAREN");
+            
+            pl2 = prog.get_free();
+            prog.put_blank();
+            prog.put_lex(Lex(Lex::POLIZ_FGO));
+            
             _operator();
-            expect(Lex::ELSE, "_operator IF: expected ELSE");
-            _operator();
+            
+            pl3 = prog.get_free();
+            prog.put_blank();
+            prog.put_lex(Lex(Lex::POLIZ_GO));
+            prog.put_lex(Lex(Lex::POLIZ_LABEL, prog.get_free()), pl2);
+            
+            get_lex();
+            if (curr_lex_type == Lex::ELSE) {
+                _operator();
+                prog.put_lex(Lex(Lex::POLIZ_LABEL, prog.get_free()), pl3);
+            }
+            else
+                lexer.put_lex(curr_lex);
             
             return true;
             break;
@@ -366,13 +381,13 @@ bool Parser::expression_operator() {
 
 /*
 
- <expression> -> <e1> | <e1> "=" <e1>
- <e1> -> <e2> | <e2> "or" <e2>
- <e2> -> <e3> | <e3> "and" <e3>
- <e3> -> <e4> | <e4> [ "<" | ">" | "!=" | "<=" | ">=" | "==" ] <e4>
- <e4> -> <e5> | <e5> [ "+" | "-" ] <e5>
- <e5> -> <e6> | <e6> [ "*" | "/" ] <e6>
- <e6> -> <e7> | <e7> "not" <e7>
+ <expression> -> <e1> { "=" <e1> }
+ <e1> -> <e2> {"or" <e2> }
+ <e2> -> <e3> { "and" <e3> }
+ <e3> -> <e4> { [ "<" | ">" | "!=" | "<=" | ">=" | "==" ] <e4> }
+ <e4> -> <e5> { [ "+" | "-" ] <e5> }
+ <e5> -> <e6> { [ "*" | "/" ] <e6> }
+ <e6> -> <e7> { "not" <e7> }
  <e7> -> <identifier> | <number> | "true" | "false" | "("<expression>")"
  
 */
@@ -382,11 +397,18 @@ bool Parser::expression() {
     if (!result)
         return result;
     
-    get_lex();
-    if (curr_lex_type == Lex::ASSIGN)
+    while (true) {
+        get_lex();
+        Lex::type_of_lex curr_lex_type_tmp = curr_lex_type;
+        if (curr_lex_type != Lex::ASSIGN) {
+            lexer.put_lex(curr_lex);
+            break;
+        }
+        //st_lex.push(curr_lex_type);
         e1();
-    else
-        lexer.put_lex(curr_lex);
+        prog.put_lex(Lex(curr_lex_type_tmp));
+        //check_op();
+    }
     
     return true;
 }
@@ -397,11 +419,19 @@ bool Parser::e1() {
     if (!result)
         return result;
     
-    get_lex();
-    if (curr_lex_type == Lex::OR)
+    while (true) {
+        get_lex();
+        Lex::type_of_lex curr_lex_type_tmp = curr_lex_type;
+        if (curr_lex_type != Lex::OR) {
+            lexer.put_lex(curr_lex);
+            break;
+        }
+        //st_lex.push(curr_lex_type);
         e2();
-    else
-        lexer.put_lex(curr_lex);
+        prog.put_lex(Lex(curr_lex_type_tmp));
+        //check_op();
+    }
+
     
     return true;
 }
@@ -412,11 +442,19 @@ bool Parser::e2() {
     if (!result)
         return result;
     
-    get_lex();
-    if (curr_lex_type == Lex::AND)
+    while (true) {
+        get_lex();
+        Lex::type_of_lex curr_lex_type_tmp = curr_lex_type;
+        if (curr_lex_type != Lex::AND) {
+            lexer.put_lex(curr_lex);
+            break;
+        }
+        //st_lex.push(curr_lex_type);
         e3();
-    else
-        lexer.put_lex(curr_lex);
+        prog.put_lex(Lex(curr_lex_type_tmp));
+        //check_op();
+    }
+
     
     return true;
 }
@@ -427,12 +465,19 @@ bool Parser::e3() {
     if (!result)
         return result;
     
-    get_lex();
-    if ((curr_lex_type == Lex::LESS) || (curr_lex_type == Lex::BIGGER) || (curr_lex_type == Lex::NOT_EQUAL) ||
-        (curr_lex_type == Lex::LESS_EQUAL) || (curr_lex_type == Lex::BIGGER_EQUAL) || (curr_lex_type == Lex::EQUAL))
+    while (true) {
+        get_lex();
+        Lex::type_of_lex curr_lex_type_tmp = curr_lex_type;
+        if (!((curr_lex_type == Lex::LESS) || (curr_lex_type == Lex::BIGGER) || (curr_lex_type == Lex::NOT_EQUAL) ||
+            (curr_lex_type == Lex::LESS_EQUAL) || (curr_lex_type == Lex::BIGGER_EQUAL) || (curr_lex_type == Lex::EQUAL))) {
+            lexer.put_lex(curr_lex);
+            break;
+        }
+        //st_lex.push(curr_lex_type);
         e4();
-    else
-        lexer.put_lex(curr_lex);
+        prog.put_lex(Lex(curr_lex_type_tmp));
+        //check_op();
+    }
     
     return true;
 }
@@ -443,11 +488,18 @@ bool Parser::e4() {
     if (!result)
         return result;
     
-    get_lex();
-    if ((curr_lex_type == Lex::PLUS) || (curr_lex_type == Lex::MINUS))
+    while (true) {
+        get_lex();
+        Lex::type_of_lex curr_lex_type_tmp = curr_lex_type;
+        if (!((curr_lex_type == Lex::PLUS) || (curr_lex_type == Lex::MINUS))) {
+            lexer.put_lex(curr_lex);
+            break;
+        }
+        //st_lex.push(curr_lex_type);
         e5();
-    else
-        lexer.put_lex(curr_lex);
+        prog.put_lex(Lex(curr_lex_type_tmp));
+        //check_op();
+    }
     
     return true;
 }
@@ -458,11 +510,18 @@ bool Parser::e5() {
     if (!result)
         return result;
     
-    get_lex();
-    if ((curr_lex_type == Lex::MUL) || (curr_lex_type == Lex::DIV))
+    while (true) {
+        get_lex();
+        Lex::type_of_lex curr_lex_type_tmp = curr_lex_type;
+        if (!((curr_lex_type == Lex::MUL) || (curr_lex_type == Lex::DIV))) {
+            lexer.put_lex(curr_lex);
+            break;
+        }
+        //st_lex.push(curr_lex_type);
         e6();
-    else
-        lexer.put_lex(curr_lex);
+        prog.put_lex(Lex(curr_lex_type_tmp));
+        //check_op();
+    }
     
     return true;
 }
@@ -473,11 +532,18 @@ bool Parser::e6() {
     if (!result)
         return result;
     
-    get_lex();
-    if (curr_lex_type == Lex::NOT)
+    while (true) {
+        get_lex();
+        Lex::type_of_lex curr_lex_type_tmp = curr_lex_type;
+        if (curr_lex_type != Lex::NOT) {
+            lexer.put_lex(curr_lex);
+            break;
+        }
+        //st_lex.push(curr_lex_type);
         e7();
-    else
-        lexer.put_lex(curr_lex);
+        prog.put_lex(Lex(curr_lex_type_tmp));
+        //check_op();
+    }
     
     return true;
 }
@@ -487,29 +553,41 @@ bool Parser::e7() {
     
     get_lex();
     switch (curr_lex_type) {
-        case Lex::IDENT:
-            
+        case Lex::IDENT: {
+            int var_index = TID.index_of(curr_lex_value);
+            if (var_index >= 0) {
+                prog.put_lex(Lex(Lex::IDENT, TID.index_of(curr_lex_value), curr_lex_value));
+            }
+            else
+                throw Exeption("e7: undeclared variable");
             break;
+        }
             
         case Lex::NUM:
-        
+//            st_lex.push(Lex::INT);
+//            prog.put_lex(Lex(curr_lex));
+            curr_lex.set_int_value(atoi(curr_lex_value));
+            prog.put_lex(curr_lex);
             break;
             
         case Lex::_TRUE:
-        
+//            st_lex.push(Lex::BOOLEAN);
+//            prog.put_lex(Lex(curr_lex_type));
             break;
             
         case Lex::_FALSE:
-        
+            st_lex.push(Lex::BOOLEAN);
+            prog.put_lex(Lex(curr_lex_type));
             break;
             
         case Lex::NOT:
-        
+            st_lex.push(Lex::NOT);
+            prog.put_lex(Lex(curr_lex_type));
             break;
             
         case Lex::OPEN_PAREN:
             expression();
-            expect(Lex::CLOSE_PAREN, "F: expected CLOSE_PAREN");
+            expect(Lex::CLOSE_PAREN, "e7: expected CLOSE_PAREN");
             break;
             
         default:
@@ -520,13 +598,31 @@ bool Parser::e7() {
     return true;
 }
 
+void Parser::check_op() {
+    Lex::type_of_lex type_1, type_2, operation, t = Lex::INT, r = Lex::BOOLEAN;
+    
+    
+    type_2 = st_lex.top();
+    st_lex.pop();
+    operation = st_lex.top();
+    st_lex.pop();
+    type_1 = st_lex.top();
+    st_lex.pop();
+
+    // need to write if
+    
+//    if (type_1 == type_2 && type_1 == t)
+//        st_lex.push(r);
+    
+    prog.put_lex(Lex(operation));
+}
+
 
 //======================================================================================================================================================
 
 int main(int argc, const char * argv[]) {
     
-    //Lexer lexer("program.txt");
-    Lex lex;
+//    Lex lex;
     Parser parser("program.txt");
     try {
         parser.analyze();
@@ -535,8 +631,17 @@ int main(int argc, const char * argv[]) {
         std::cerr << "unhandled error: " << exeption.get_message() << std::endl;
     }
 
-    
     TID.print();
+    
+    //=============| Lexer Debug |=============
+    Lexer debug_lexer("program.txt");
+    Lex debug_lex;
+    do {
+        debug_lex = debug_lexer.get_lex();
+        std::cout << debug_lex;
+    } while (debug_lex.get_type() != Lex::FIN);
+    std::cout << std::endl;
+    //=========================================
     
     return 0;
 }

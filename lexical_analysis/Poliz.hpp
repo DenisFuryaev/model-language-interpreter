@@ -18,8 +18,8 @@ public:
     ~Poliz();
     void put_lex(Lex lex);
     void put_lex(Lex lex, int place);
-    void blank();
-    int get_free();
+    void put_blank();
+    int  get_free();
     Lex & operator[](int index);
     void print();
     

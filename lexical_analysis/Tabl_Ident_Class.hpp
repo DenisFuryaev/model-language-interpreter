@@ -19,13 +19,14 @@ public:
     Tabl_Ident(int max_size);
     ~Tabl_Ident();
     Ident * operator[](int k);
-    int put(Ident * ident);
+    bool put(Ident * ident);
     void print();
+    int index_of(const char * name) const;
     
 private:
     Ident ** pointer;
     int size;
-    int top;
+    int len;
     
 };
 

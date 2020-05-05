@@ -11,7 +11,7 @@
 Tabl_Ident::Tabl_Ident(int max_size) {
     size = max_size;
     pointer = new Ident * [size];
-    top = 1;
+    len = 0;
 }
 
 Tabl_Ident::~Tabl_Ident() {
@@ -22,19 +22,26 @@ Ident * Tabl_Ident::operator[](int k) {
     return pointer[k];
 }
 
-int Tabl_Ident::put(Ident * ident) {
-    for (int i = 1; i < top; i++)
+bool Tabl_Ident::put(Ident * ident) {
+    for (int i = 0; i < len; i++)
         if (!strcmp(ident->get_name(), pointer[i]->get_name()))
-            return 0;
-    pointer[top] = ident;
-    top++;
-    return top - 1;
+            return false;
+    pointer[len] = ident;
+    len++;
+    return true;
 }
 
 void Tabl_Ident::print() {
-    for (int i = 1; i < top; i++) {
+    for (int i = 0; i < len; i++) {
         std::cout << pointer[i]->get_type() << " " <<  pointer[i]->get_name() << " ";
         pointer[i]->dump_str_value();
         std::cout << std::endl;
     }
+}
+
+int Tabl_Ident::index_of(const char * name) const {
+    for (int i = 0; i < len; i++)
+        if (!strcmp(name, pointer[i]->get_name()))
+           return i;
+    return -1;
 }

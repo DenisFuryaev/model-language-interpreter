@@ -10,7 +10,6 @@
 
 #include "IdentClass.hpp"
 #include <string>
-#include <iostream>
 
 Ident::Ident(const char * name) {
     strcpy(this->name, name);
@@ -32,7 +31,7 @@ void    BoolIdent::put_value(const char * value) {
 }
 
 void StringIdent::dump_str_value() { std::cout << value; }
-void IntIdent::dump_str_value() { std::cout << std::to_string(value); }
+void IntIdent::dump_str_value() { std::cout << value; }
 void BoolIdent::dump_str_value() {
     if (value)
         std::cout << "true";

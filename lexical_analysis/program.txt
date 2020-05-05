@@ -1,13 +1,10 @@
 program {
-	int a = 0, b = 45;
-	if (a > b) {
-		a = 5;
-		write(a, b);
-	}
+	int a,b,c,d;
+	if (a) {
+		a = 1;
+	}	
 	else {
-		b = 5;
-		if (a*b > a - b)
-			else
+		a = 2;
 	}
 
 }

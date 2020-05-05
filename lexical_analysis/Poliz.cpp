@@ -28,7 +28,7 @@ void Poliz::put_lex(Lex lex, int place) {
     pointer[place] = lex;
 }
 
-void Poliz::blank() {
+void Poliz::put_blank() {
     free++;
 }
 
@@ -49,4 +49,5 @@ Lex & Poliz::operator[](int index) {
 void Poliz::print() {
     for (int i = 0; i < free; i++)
         std::cout << pointer[i] << " ";
+    std::cout << std::endl;
 }
