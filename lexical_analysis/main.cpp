@@ -64,7 +64,6 @@ private:
     bool e4();
     bool e5();
     bool e6();
-    bool e7();
     
 };
 //------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -96,8 +95,7 @@ private:
  <e3> -> <e4> | <e4> [ "<" | ">" | "!=" | "<=" | ">=" | "==" ] <e4>
  <e4> -> <e5> | <e5> [ "+" | "-" ] <e5>
  <e5> -> <e6> | <e6> [ "*" | "/" ] <e6>
- <e6> -> <e7> | <e7> "not" <e7>
- <e7> -> <identifier> | <number> | "true" | "false" | "("<expression>")"
+ <e6> -> <identifier> | <number> | "true" | "false" | "("<expression>")" | "not" <e6>
 
 */
 
@@ -216,17 +214,41 @@ void Parser::variable(Ident::var_type var_type) {
                     throw Exeption("variable: double declaration");
                 break;
             default:
-                throw LexExeption(curr_lex.get_type(), curr_lex.get_value()); // no need for this throw ???
+                throw LexExeption(curr_lex.get_type(), curr_lex.get_value());
                 break;
         }
         
         get_lex();
         if (curr_lex_type == Lex::ASSIGN) {
             get_lex();
+            char signed_num[15];
+            signed_num[0] = '\0';
+            switch (curr_lex_type) {
+                case Lex::PLUS:
+                    signed_num[0] = '+';
+                    signed_num[1] = '\0';
+                    break;
+                    
+                case Lex::MINUS:
+                    signed_num[0] = '-';
+                    signed_num[1] = '\0';
+                    break;
+                    
+                default:
+                    lexer.put_lex(curr_lex);
+                    break;
+            }
+                 
+            get_lex();
             if  (((var_type == Ident::INT) && (curr_lex_type == Lex::NUM)) ||
                 ((var_type == Ident::STR) && (curr_lex_type == Lex::STRING))  ||
                 ((var_type == Ident::BOOL) && ((curr_lex_type == Lex::_TRUE) || (curr_lex_type == Lex::_FALSE)))) {
-                ident->put_value(curr_lex_value);
+                if (signed_num[0] != '\0') {
+                    strcat(signed_num, curr_lex_value);
+                    ident->put_value(signed_num);
+                }
+                else
+                    ident->put_value(curr_lex_value);
             }
             else
                 throw Exeption("variable: const and ident type conflict");
@@ -243,8 +265,13 @@ void Parser::variable(Ident::var_type var_type) {
                     "while" "("<expression>")" <_operator>                      |
                     "read"  "("<identifier>")" ";"                              |
                     "write" "("<expression> { ","<expression> }")" ";"          |
-                    <composite_operator> |
+                    "for"   "("[<expression>]";"[<expression>]";"[<expression>]")" <_operator> |
+                    <marked_operator>       |
+                    "goto" <identifier> ";" |
+                    "break"                 |
+                    <composite_operator>    |
                     <expression_operator>
+    <marked_operator>     -> <identifier> ":" <_operator>
     <composite_operator>  -> "{"<_operator>"}"
     <expression_operator> -> <expression>";"
 */
@@ -258,6 +285,10 @@ bool Parser::_operator() {
     
     get_lex();
     switch (curr_lex_type) {
+            
+        // "break"
+        case Lex::BREAK:
+            prog.put_lex(Lex(Lex::BREAK));
 
         // "if" "(" <expression> ")" <_operator> else <_operator>
         case Lex::IF:
@@ -428,8 +459,7 @@ bool Parser::expression_operator() {
  <e3> -> <e4> | <e4> [ "<" | ">" | "!=" | "<=" | ">=" | "==" ] <e4>
  <e4> -> <e5> { [ "+" | "-" ] <e5> }
  <e5> -> <e6> { [ "*" | "/" ] <e6> }
- <e6> -> <e7> { "not" <e7> }
- <e7> -> <identifier> | <number> | "true" | "false" | "("<expression>")"
+ <e6> -> <identifier> | <number> | "true" | "false" | "("<expression>")" | "not" <e6>
  
 */
 
@@ -553,29 +583,8 @@ bool Parser::e5() {
     return true;
 }
 
-// <e6> -> <e7> { "not" <e7> }
+// <e6> -> <identifier> | <number> | "true" | "false" | "("<expression>")" | "not" <e6>
 bool Parser::e6() {
-    bool result = e7();
-    if (!result)
-        return result;
-    
-    while (true) {
-        get_lex();
-        Lex::type_of_lex curr_lex_type_tmp = curr_lex_type;
-        if (curr_lex_type != Lex::NOT) {
-            lexer.put_lex(curr_lex);
-            break;
-        }
-        e7();
-        prog.put_lex(Lex(curr_lex_type_tmp));
-    }
-    
-    return true;
-}
-
-// <e7> -> <identifier> | <number> | "true" | "false" | "("<expression>")"
-bool Parser::e7() {
-    
     get_lex();
     switch (curr_lex_type) {
         case Lex::IDENT: {
@@ -584,7 +593,7 @@ bool Parser::e7() {
                 prog.put_lex(Lex(Lex::IDENT, TID.index_of(curr_lex_value), curr_lex_value));
             }
             else
-                throw Exeption("e7: undeclared variable");
+                throw Exeption("e5: undeclared variable");
             break;
         }
             
@@ -594,20 +603,21 @@ bool Parser::e7() {
             break;
             
         case Lex::_TRUE:
-
+            prog.put_lex(curr_lex);
             break;
             
         case Lex::_FALSE:
-
+            prog.put_lex(curr_lex);
             break;
             
         case Lex::NOT:
-
+            prog.put_lex(curr_lex);
+            e6();
             break;
             
         case Lex::OPEN_PAREN:
             expression();
-            expect(Lex::CLOSE_PAREN, "e7: expected CLOSE_PAREN");
+            expect(Lex::CLOSE_PAREN, "e5: expected CLOSE_PAREN");
             break;
             
         default:
