@@ -31,6 +31,8 @@ Lex::Lex(type_of_lex type, int value, const char * str_value) {
     int_value = value;
     if (str_value)
         strcpy(lex_value, str_value);
+    else
+        lex_value[0] = '\0';
 }
 
 char * Lex::get_value() {
@@ -42,7 +44,8 @@ Lex::Lex(type_of_lex type, const char * value) {
     lex_type = type;
     if (value)
         strcpy(lex_value, value);
-    else lex_value[0] = '\0';
+    else
+        lex_value[0] = '\0';
 }
 
 std::ostream & operator << (std::ostream & s, Lex lex) {

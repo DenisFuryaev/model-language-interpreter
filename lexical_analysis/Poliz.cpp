@@ -47,7 +47,9 @@ Lex & Poliz::operator[](int index) {
 }
 
 void Poliz::print() {
-    for (int i = 0; i < free; i++)
-        std::cout << pointer[i] << " ";
+    for (int i = 0; i < free; i++) {
+        std::cout << "[" << i << "] ";
+        std::cout << pointer[i] << std::endl;
+    }
     std::cout << std::endl;
 }
