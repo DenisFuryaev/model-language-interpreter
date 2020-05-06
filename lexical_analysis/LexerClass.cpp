@@ -70,6 +70,8 @@ Lex Lexer::get_lex() {
     int index;
     while(true) {
         if (feof(fp)) {
+            if ((CS == DELIM) && (!strcmp(buf, "}")))
+                return Lex(Lex::type_of_lex(Lex::CLOSE_BRACES));
             if (CS == STRING)
                 throw Exeption("string not closed");
             if (CS == COMMENT)

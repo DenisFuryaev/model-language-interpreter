@@ -623,7 +623,6 @@ bool Parser::e7() {
 
 int main(int argc, const char * argv[]) {
     
-//    Lex lex;
     Parser parser("program.txt");
     try {
         parser.analyze();
