@@ -38,6 +38,7 @@ public:
 
     virtual var_type    get_type() { return Ident::STR; }
     char *              get_value();
+    void                set_value(const char * value);
     virtual void        put_value(const char * value);
     virtual void        dump_str_value();
 
@@ -54,6 +55,7 @@ public:
 
     virtual var_type    get_type() { return Ident::INT; }
     int                 get_value();
+    void                set_value(int value);
     virtual void        put_value(const char * value);
     virtual void        dump_str_value();
     
@@ -69,6 +71,7 @@ public:
 
     virtual var_type    get_type() { return Ident::BOOL; }
     bool                get_value();
+    void                set_value(bool value);
     virtual void        put_value(const char * value);
     virtual void        dump_str_value();
     

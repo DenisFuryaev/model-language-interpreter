@@ -128,6 +128,126 @@ void Executer::execute(Poliz & prog) {
                 break;
             }
                 
+            case Lex::ASSIGN: {
+                lex_arg_1 = args.top();
+                args.pop();
+                lex_arg_2 = args.top();
+                args.pop();
+                
+                const char * str_arg_1;
+                
+                switch (lex_arg_1.get_type()) {
+                    case Lex::IDENT: {
+                        Ident * ident = (*TID)[lex_arg_1.get_int_value()];
+                        
+                        switch (ident->get_type()) {
+                        
+                            case Ident::INT: {
+                                IntIdent * int_ident = dynamic_cast <IntIdent*> (ident);
+                                if (!int_ident)
+                                    throw Exeption("dynamic_cast eroor");
+                                int_arg_1 = int_ident->get_value();
+                                type_arg_1 = Lex::INT;
+                                break;
+                            }
+                                
+                            case Ident::STR: {
+                                StringIdent * string_ident = dynamic_cast <StringIdent*> (ident);
+                                if (!string_ident)
+                                    throw Exeption("dynamic_cast eroor");
+                                str_arg_1 = string_ident->get_value();
+                                type_arg_1 = Lex::STRING;
+                                break;
+                            }
+                                
+                            case Ident::BOOL: {
+                                BoolIdent * bool_ident = dynamic_cast <BoolIdent*> (ident);
+                                if (!bool_ident)
+                                    throw Exeption("dynamic_cast eroor");
+                                int_arg_1 = bool_ident->get_value();
+                                type_arg_1 = Lex::BOOLEAN;
+                                break;
+                            }
+                                
+                            default:
+                                throw Exeption("wrong type of ident in write");
+                                break;
+                        }
+                        break;
+                    }
+                        
+                    case Lex::STRING:
+                        str_arg_1 = lex_arg_1.get_str_value();
+                        type_arg_1 = Lex::STRING;
+                        break;
+                        
+                    
+                    case Lex::INT:
+                    case Lex::NUM:
+                        int_arg_1 = lex_arg_1.get_int_value();
+                        type_arg_1 = Lex::INT;
+                        break;
+                    
+                    case Lex::BOOLEAN:
+                        int_arg_1 = lex_arg_1.get_int_value();
+                        type_arg_1 = Lex::BOOLEAN;
+                        break;
+                        
+                    default:
+                        throw Exeption("wrong type of const in write");
+                        break;
+                }
+                
+                
+                
+                if (lex_arg_2.get_type() != Lex::IDENT)
+                    throw Exeption("first assign arg should be variable");
+                
+                Ident * ident = (*TID)[lex_arg_2.get_int_value()];
+                        
+                switch (ident->get_type()) {
+                        
+                    case Ident::INT: {
+                        IntIdent * int_ident = dynamic_cast <IntIdent*> (ident);
+                        if (!int_ident)
+                            throw Exeption("dynamic_cast error");
+                        if (type_arg_1 == Lex::INT)
+                            int_ident->set_value(int_arg_1);
+                        else
+                            throw Exeption("Assign types conflict");
+                        break;
+                        }
+                                
+                    case Ident::STR: {
+                        StringIdent * string_ident = dynamic_cast <StringIdent*> (ident);
+                        if (!string_ident)
+                            throw Exeption("dynamic_cast error");
+                        if (type_arg_1 == Lex::STRING)
+                            string_ident->set_value(str_arg_1);
+                        else
+                            throw Exeption("Assign types conflict");
+                        break;
+                    }
+                                
+                    case Ident::BOOL: {
+                        BoolIdent * bool_ident = dynamic_cast <BoolIdent*> (ident);
+                        if (!bool_ident)
+                            throw Exeption("dynamic_cast error");
+                        if (type_arg_1 == Lex::BOOLEAN)
+                            bool_ident->set_value(int_arg_1);
+                        else
+                            throw Exeption("Assign types conflict");
+                        break;
+                    }
+                                
+                    default:
+                        throw Exeption("wrong type of ident in write");
+                        break;
+                }
+                                    
+                break;
+            }
+                
             case Lex::DIV: {
                 lex_arg_1 = args.top();
                 args.pop();
@@ -391,7 +511,7 @@ int main(int argc, const char * argv[]) {
         std::cout << std::endl;
            
         Executer executer(&(parser.TID));
-        
+
         executer.execute(parser.prog);
     }
     catch (Exeption exeption) {
