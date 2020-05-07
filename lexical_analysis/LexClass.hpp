@@ -30,7 +30,8 @@ public:
     Lex(type_of_lex type, int value, const char * str_value = NULL);
     void set_int_value(int int_value);
     type_of_lex get_type();
-    char * get_value();
+    char * get_str_value();
+    int get_int_value();
     friend std::ostream & operator << (std::ostream & s, Lex lex);
     
 private:

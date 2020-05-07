@@ -35,8 +35,12 @@ Lex::Lex(type_of_lex type, int value, const char * str_value) {
         lex_value[0] = '\0';
 }
 
-char * Lex::get_value() {
+char * Lex::get_str_value() {
     return lex_value;
+}
+
+int Lex::get_int_value() {
+    return int_value;
 }
 
 Lex::Lex(type_of_lex type, const char * value) {

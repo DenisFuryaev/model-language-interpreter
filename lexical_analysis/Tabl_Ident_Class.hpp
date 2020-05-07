@@ -18,7 +18,7 @@ class Tabl_Ident {
 public:
     Tabl_Ident(int max_size);
     ~Tabl_Ident();
-    Ident * operator[](int k);
+    Ident * operator[](int k) const;
     bool put(Ident * ident);
     void print();
     int index_of(const char * name) const;

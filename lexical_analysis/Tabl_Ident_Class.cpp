@@ -18,7 +18,7 @@ Tabl_Ident::~Tabl_Ident() {
     delete []pointer;
 }
 
-Ident * Tabl_Ident::operator[](int k) {
+Ident * Tabl_Ident::operator[](int k) const {
     return pointer[k];
 }
 

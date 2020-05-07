@@ -19,11 +19,12 @@
 class Parser {
     
 public:
-    Parser(const char * program_file_path): lexer(program_file_path), prog(1000){}
+    Parser(const char * program_file_path): lexer(program_file_path), prog(1000), TID(100) {}
     void analyze();
     
 public:
     Poliz prog;
+    Tabl_Ident TID;
     
 private:
     Lexer lexer;
