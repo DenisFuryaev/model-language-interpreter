@@ -1,6 +1,12 @@
 program {
-	int i = 0;
+	int i = 1,x = 9,y = 2;	
+	boolean b = false;
+	string s1 = "hello", s2 = "hi";
 	
-	for (i = 0; i < 5; i = i + 1)
-		write(i);
+	for(i = 0; i < 5; i = i + 1) {	
+		s1 = "hi" + s1;
+		write(s1);
+		x = x + 12;
+		write(x);
+	}
 }
