@@ -1,6 +1,7 @@
 program {
 	int a = 51,b = 6,c = 1, d = 0;
-	string str = "", str2 = "";
+	string str = "Denis", str2 = "";
+	boolean bb = true;
 
-	
+	write("my" + " name is " + str);
 }

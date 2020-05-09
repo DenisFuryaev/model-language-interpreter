@@ -42,7 +42,7 @@
  <e3> -> <e4> | <e4> [ "<" | ">" | "!=" | "<=" | ">=" | "==" ] <e4>
  <e4> -> <e5> { [ "+" | "-" ] <e5> }
  <e5> -> <e6> { [ "*" | "/" ] <e6> }
- <e6> -> [ "-" ] <identifier> | [ "-" ] <number> | "true" | "false" | "("<expression>")" | "not" <e6>
+ <e6> -> [ "-" ] <identifier> | [ "-" ] <number> | string | "true" | "false" | "("<expression>")" | "not" <e6>
 
 */
 
@@ -69,8 +69,7 @@ void Parser::expect(Lex::type_of_lex lex_type, const char * error_message) {
 
 void Parser::analyze() {
     program();
-    std::cout << "  Successfully parsed" << std::endl << std::endl;
-    prog.print();
+    std::cout << "  Successfully parsed" << std::endl;
 }
 
  // <program> ->  program "{" <declarations> <operators> "}"
@@ -467,7 +466,7 @@ bool Parser::expression_operator() {
  <e3> -> <e4> | <e4> [ "<" | ">" | "!=" | "<=" | ">=" | "==" ] <e4>
  <e4> -> <e5> { [ "+" | "-" ] <e5> }
  <e5> -> <e6> { [ "*" | "/" ] <e6> }
- <e6> -> <identifier> | <number> | "true" | "false" | "("<expression>")" | "not" <e6>
+ <e6> -> [ "-" ] <identifier> | [ "-" ] <number> | string | "true" | "false" | "("<expression>")" | "not" <e6>
  
 */
 
