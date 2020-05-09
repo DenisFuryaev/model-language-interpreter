@@ -186,19 +186,36 @@ void Parser::variable(Ident::var_type var_type) {
             }
                  
             get_lex();
-            if  (((var_type == Ident::INT) && (curr_lex_type == Lex::NUM)) ||
-                ((var_type == Ident::STR) && (curr_lex_type == Lex::STRING))  ||
-                ((var_type == Ident::BOOL) && ((curr_lex_type == Lex::_TRUE) || (curr_lex_type == Lex::_FALSE)))) {
-                if (signed_num[0] != '\0') {
-                    strcat(signed_num, curr_lex_value);
-                    ident->put_value(signed_num);
-                }
-                else
+            switch (var_type) {
+                case Ident::INT:
+                    if (curr_lex_type != Lex::NUM)
+                        throw Exeption("variable: const must be value of int");
+                    if (signed_num[0] != '\0') {
+                        strcat(signed_num, curr_lex_value);
+                        ident->put_value(signed_num);
+                    }
+                    else
+                        ident->put_value(curr_lex_value);
+                    break;
+                    
+                case Ident::STR:
+                    if (curr_lex_type != Lex::STRING)
+                        throw Exeption("variable: const must be value of str");
                     ident->put_value(curr_lex_value);
+                    break;
+                    
+                case Ident::BOOL:
+                    if (!((curr_lex_type == Lex::_TRUE) || (curr_lex_type == Lex::_FALSE)))
+                        throw Exeption("variable: const must be value of bool");
+                    if (curr_lex_type == Lex::_TRUE)
+                        ident->put_value("true");
+                    else
+                        ident->put_value("false");
+                    break;
+                    
+                default:
+                    break;
             }
-            else
-                throw Exeption("variable: const and ident type conflict");
-                //lexer.put_lex(curr_lex);
         }
         else lexer.put_lex(curr_lex);
     }
@@ -291,7 +308,8 @@ bool Parser::_operator() {
         case Lex::IF:
             
             expect(Lex::OPEN_PAREN, "_operator IF: expected OPEN_PAREN");
-            expression();
+            if (!expression())
+                throw Exeption("_operator IF: missing condition expression");
             expect(Lex::CLOSE_PAREN, "_operator IF: expected CLOSE_PAREN");
             
             pl2 = prog.get_free();
@@ -323,12 +341,14 @@ bool Parser::_operator() {
         case Lex::FOR:
         
             expect(Lex::OPEN_PAREN, "_operator FOR: expected OPEN_PAREN");
-            expression();
+            if (!expression())
+                throw Exeption("_operator FOR: missing init expression");
             expect(Lex::SEMICOLON, "_operator FOR: expected SEMICOLON");
             
             pl0 = prog.get_free();
             
-            expression();
+            if (!expression())
+                throw Exeption("_operator FOR: missing condition expression");
             
             pl1 = prog.get_free();
             prog.put_blank();
@@ -341,7 +361,8 @@ bool Parser::_operator() {
             
             pl3 = prog.get_free();
             
-            expression();
+            if (!expression())
+                throw Exeption("_operator FOR: missing iteration expression");
             
             prog.put_lex(Lex(Lex::POLIZ_LABEL, pl0));
             prog.put_lex(Lex(Lex::POLIZ_GO));
@@ -365,7 +386,8 @@ bool Parser::_operator() {
             pl2 = prog.get_free();
             
             expect(Lex::OPEN_PAREN, "_operator WHILE: expected OPEN_PAREN");
-            expression();
+            if (!expression())
+                throw Exeption("_operator WHILE: missing condition expression");
             expect(Lex::CLOSE_PAREN, "_operator WHILE: expected CLOSE_PAREN");
             
             pl1 = prog.get_free();
@@ -407,7 +429,8 @@ bool Parser::_operator() {
             expect(Lex::OPEN_PAREN, "_operator WRITE: expected OPEN_PAREN");
             int arg_count = 0;
             while (true) {
-                expression();
+                if (!expression())
+                    throw Exeption("_operator WRITE: missing output expression");
                 arg_count++;
                 get_lex();
                 if (curr_lex_type != Lex::COMMA) {
@@ -590,14 +613,14 @@ bool Parser::e5() {
     return true;
 }
 
-// <e6> -> [ "-" ] <identifier> | [ "-" ] <number> | "true" | "false" | "("<expression>")" | "not" <e6>
+// <e6> -> [ "-" ] <identifier> | [ "-" ] <number> | string | "true" | "false" | "("<expression>")" | "not" <e6>
 bool Parser::e6() {
     get_lex();
     switch (curr_lex_type) {
         case Lex::IDENT: {
             int var_index = TID.index_of(curr_lex_value);
             if (var_index >= 0) {
-                prog.put_lex(Lex(Lex::IDENT, TID.index_of(curr_lex_value), curr_lex_value));
+                prog.put_lex(Lex(Lex::IDENT, var_index, curr_lex_value));
             }
             else
                 throw Exeption("e6: undeclared variable");
@@ -629,17 +652,19 @@ bool Parser::e6() {
             break;
             
         case Lex::_TRUE:
-            prog.put_lex(curr_lex);
+            prog.put_lex(Lex(Lex::_TRUE, 1));
             break;
             
         case Lex::_FALSE:
-            prog.put_lex(curr_lex);
+            prog.put_lex(Lex(Lex::_FALSE, 0));
             break;
             
-        case Lex::NOT:
-            prog.put_lex(curr_lex);
+        case Lex::NOT: {
+            Lex tmp_lex = curr_lex;
             e6();
+            prog.put_lex(tmp_lex);
             break;
+        }
             
         case Lex::OPEN_PAREN:
             expression();

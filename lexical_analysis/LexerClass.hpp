@@ -21,6 +21,7 @@
 class LexExeption : public Exeption {
 public:
     LexExeption(Lex::type_of_lex lex_type, const char * message = nullptr);
+    Lex get_lex_type();
     
 private:
     const char * message;

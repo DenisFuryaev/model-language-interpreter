@@ -22,9 +22,15 @@ public:
     Executer(const Tabl_Ident * TID);
     
 private:
+    void to_int(Lex lex_arg_1, int & int_arg_1, Lex::type_of_lex & type_arg_1) const;
+    Ident * find_ident(Lex lex) const;
+    BoolIdent * find_bool_ident(Lex lex) const;
+    IntIdent * find_int_ident(Lex lex) const;
+    StringIdent * find_str_ident(Lex lex) const;
+    
+private:
     Lex curr_lex;
     const Tabl_Ident * TID;
-    void to_int(Lex lex_arg_1, int & int_arg_1, Lex::type_of_lex & type_arg_1) const;
 };
 
 #endif /* Executer_hpp */

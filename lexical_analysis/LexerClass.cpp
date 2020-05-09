@@ -15,6 +15,9 @@ LexExeption::LexExeption(Lex::type_of_lex lex_type, const char * message)
     : Exeption(message) {
     this->lex_type = lex_type;
 }
+Lex LexExeption::get_lex_type() {
+    return this->lex_type;
+}
 
 void  Lexer::read_char() { c = fgetc(fp); }
 

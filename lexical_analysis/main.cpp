@@ -51,11 +51,11 @@ int main(int argc, const char * argv[]) {
 
         Executer executer(&(parser.TID));
 
-        std::cout << "> ";
+        std::cout << " Program output:" << std::endl;
         executer.execute(parser.prog);
     }
     catch (LexExeption lex_exeption) {
-        std::cerr << "unhandled error: " << lex_exeption.get_message() << std::endl;
+        std::cerr << "unhandled error: " << lex_exeption.get_lex_type() << lex_exeption.get_message() << std::endl;
     }
     catch (Exeption exeption) {
         std::cerr << "unhandled error: " << exeption.get_message() << std::endl;
