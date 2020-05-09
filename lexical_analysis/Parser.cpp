@@ -31,12 +31,12 @@
                     <composite_operator> | <expression_operator>
  <composite_operator>   -> "{"<_operator>"}"
  <expression_operator>  -> <expression>";"
- <expression> -> <e1> | <e1> "=" <e1>
- <e1> -> <e2> | <e2> "or" <e2>
- <e2> -> <e3> | <e3> "and" <e3>
+ <expression> -> <e1> { "=" <expression> }
+ <e1> -> <e2> {"or" <e2> }
+ <e2> -> <e3> { "and" <e3> }
  <e3> -> <e4> | <e4> [ "<" | ">" | "!=" | "<=" | ">=" | "==" ] <e4>
- <e4> -> <e5> | <e5> [ "+" | "-" ] <e5>
- <e5> -> <e6> | <e6> [ "*" | "/" ] <e6>
+ <e4> -> <e5> { [ "+" | "-" ] <e5> }
+ <e5> -> <e6> { [ "*" | "/" ] <e6> }
  <e6> -> <identifier> | <number> | "true" | "false" | "("<expression>")" | "not" <e6>
 
 */
@@ -327,22 +327,33 @@ bool Parser::_operator() {
             break;
             
         // "read" "(" <identifier> ")" ";"
-        case Lex::READ:
+        case Lex::READ: {
             
             expect(Lex::OPEN_PAREN, "_operator READ: expected OPEN_PAREN");
             expect(Lex::IDENT, "_operator READ: expected IDENT");
+            
+            int var_index = TID.index_of(curr_lex_value);
+            if (var_index >= 0) {
+                prog.put_lex(Lex(Lex::IDENT, TID.index_of(curr_lex_value), curr_lex_value));
+            }
+            else
+                throw Exeption("e5: undeclared variable");
+            
             expect(Lex::CLOSE_PAREN, "_operator READ: expected CLOSE_PAREN");
             prog.put_lex(Lex(Lex::READ));
             expect(Lex::SEMICOLON, "_operator READ: expected SEMICOLON");
             
             return true;
             break;
+        }
             
         // "write" "(" <expression> { "," <expression> }" )" ";"
-        case Lex::WRITE:
+        case Lex::WRITE: {
             expect(Lex::OPEN_PAREN, "_operator WRITE: expected OPEN_PAREN");
+            int arg_count = 0;
             while (true) {
                 expression();
+                arg_count++;
                 get_lex();
                 if (curr_lex_type != Lex::COMMA) {
                     lexer.put_lex(curr_lex);
@@ -350,11 +361,12 @@ bool Parser::_operator() {
                 }
             }
             expect(Lex::CLOSE_PAREN, "_operator WRITE: expected CLOSE_PAREN");
-            prog.put_lex(Lex(Lex::WRITE));
+            prog.put_lex(Lex(Lex::WRITE, arg_count));
             expect(Lex::SEMICOLON, "_operator WRITE: expected SEMICOLON");
             
             return true;
             break;
+        }
             
         case Lex::OPEN_BRACES:
             lexer.put_lex(curr_lex);
@@ -395,7 +407,7 @@ bool Parser::expression_operator() {
 
 /*
 
- <expression> -> <e1> { "=" <e1> }
+ <expression> -> <e1> { "=" <expression> }
  <e1> -> <e2> {"or" <e2> }
  <e2> -> <e3> { "and" <e3> }
  <e3> -> <e4> | <e4> [ "<" | ">" | "!=" | "<=" | ">=" | "==" ] <e4>
@@ -417,7 +429,7 @@ bool Parser::expression() {
             lexer.put_lex(curr_lex);
             break;
         }
-        e1();
+        expression();
         prog.put_lex(Lex(curr_lex_type_tmp));
     }
     
