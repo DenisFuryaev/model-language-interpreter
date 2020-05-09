@@ -357,6 +357,47 @@ void Executer::execute(Poliz & prog) {
                 
                 break;
             }
+                
+            case Lex::NEGATIVE: {
+                lex_arg_1 = args.top();
+                args.pop();
+                
+                switch (lex_arg_1.get_type()) {
+                        
+                    case Lex::NUM:
+                        args.push(Lex(lex_arg_1.get_type(), -atoi(lex_arg_1.get_str_value())));
+                        break;
+
+                    case Lex::IDENT: {
+                        int var_index = TID->index_of(lex_arg_1.get_str_value());
+                        if (var_index >= 0) {
+                            Ident * ident = (*TID)[var_index];
+                            if (!ident)
+                                throw Exeption("dynamic_cast eroor");
+
+                            if (ident->get_type() != Ident::INT)
+                                throw Exeption("NEGATIVE: ident must be int");
+                            
+                            IntIdent * int_ident = dynamic_cast <IntIdent*> (ident);
+                            if (!int_ident)
+                                throw Exeption("dynamic_cast eroor");
+                            
+                            args.push(Lex(Lex::NUM, -int_ident->get_value()));
+                            break;
+                        
+                        }
+                        else
+                            throw Exeption("NEGATIVE: undeclared variable");
+                        break;
+                    }
+    
+                    default:
+                        throw Exeption("NEGATIVE: ident or num must be");
+                        break;
+                }
+                break;
+            }
+        
         
                 
             case Lex::PLUS: {

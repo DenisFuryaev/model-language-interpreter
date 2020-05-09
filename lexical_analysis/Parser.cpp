@@ -42,7 +42,7 @@
  <e3> -> <e4> | <e4> [ "<" | ">" | "!=" | "<=" | ">=" | "==" ] <e4>
  <e4> -> <e5> { [ "+" | "-" ] <e5> }
  <e5> -> <e6> { [ "*" | "/" ] <e6> }
- <e6> -> <identifier> | <number> | "true" | "false" | "("<expression>")" | "not" <e6>
+ <e6> -> [ "-" ] <identifier> | [ "-" ] <number> | "true" | "false" | "("<expression>")" | "not" <e6>
 
 */
 
@@ -591,7 +591,7 @@ bool Parser::e5() {
     return true;
 }
 
-// <e6> -> <identifier> | <number> | "true" | "false" | "("<expression>")" | "not" <e6>
+// <e6> -> [ "-" ] <identifier> | [ "-" ] <number> | "true" | "false" | "("<expression>")" | "not" <e6>
 bool Parser::e6() {
     get_lex();
     switch (curr_lex_type) {
@@ -601,9 +601,24 @@ bool Parser::e6() {
                 prog.put_lex(Lex(Lex::IDENT, TID.index_of(curr_lex_value), curr_lex_value));
             }
             else
-                throw Exeption("e5: undeclared variable");
+                throw Exeption("e6: undeclared variable");
             break;
         }
+            
+        case Lex::MINUS:
+            get_lex();
+            switch (curr_lex_type) {
+                case Lex::IDENT:
+                case Lex::NUM:
+                    prog.put_lex(curr_lex);
+                    prog.put_lex(Lex(Lex::NEGATIVE));
+                    break;
+                    
+                default:
+                    throw Exeption("e6: ident or num must be after MINUS");
+                    break;
+            }
+            break;
             
         case Lex::NUM:
             curr_lex.set_int_value(atoi(curr_lex_value));
@@ -629,7 +644,7 @@ bool Parser::e6() {
             
         case Lex::OPEN_PAREN:
             expression();
-            expect(Lex::CLOSE_PAREN, "e5: expected CLOSE_PAREN");
+            expect(Lex::CLOSE_PAREN, "e6: expected CLOSE_PAREN");
             break;
             
         default:

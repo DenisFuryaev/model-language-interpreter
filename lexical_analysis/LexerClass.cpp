@@ -21,7 +21,7 @@ void  Lexer::read_char() { c = fgetc(fp); }
 const char * Lexer::Reserved_Table[] = {"program", "write", "read", "and", "or", "not", "if", "else", "case", "of", "end", "do", "while", "for",
                                         "until", "continue", "break", "true", "false", "int", "real", "boolean", "string", "goto", NULL};           // change when new Lex is added in type_of_lex!!!!!"
 
-const char * Lexer::Delim_Table[] = {":",";", ",", "(", ")", "{", "}", "+", "-", "*", "/", ">", "<", "=", ">=", "<=", "==", "!=", "\"", "#", NULL}; // change when new Lex is added in type_of_lex!!!!!
+const char * Lexer::Delim_Table[] = {":",";", ",", "(", ")", "{", "}", "+", "-", "-", "*", "/", ">", "<", "=", ">=", "<=", "==", "!=", "\"", "#", NULL}; // change when new Lex is added in type_of_lex!!!!!
 
 Lexer::Lexer(const char * program_file_path)
     : pocket_stack() {
