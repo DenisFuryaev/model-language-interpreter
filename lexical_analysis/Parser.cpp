@@ -8,8 +8,6 @@
 
 #include "Parser.hpp"
 
-//Tabl_Ident TID(100);
-
 /*
 
  <program>      ->  program "{" <declarations> <operators> "}"
@@ -28,9 +26,16 @@
                     "read"  "("<identifier>")" ";"                          |
                     "write" "("<expression> { ","<expression> }")" ";"      |
                     "for"   "("[<expression>]";"[<expression>]";"[<expression>]")" <_operator> |
-                    <composite_operator> | <expression_operator>
+                    <composite_operator>    |
+                    <expression_operator>   |
+                    <marked_operator>       |
+                    "goto" <identifier> ";" |
+                    "break"                 |
+ 
+ <marked_operator>      -> <identifier> ":" <_operator>
  <composite_operator>   -> "{"<_operator>"}"
  <expression_operator>  -> <expression>";"
+ 
  <expression> -> <e1> { "=" <expression> }
  <e1> -> <e2> {"or" <e2> }
  <e2> -> <e3> { "and" <e3> }
@@ -227,10 +232,61 @@ bool Parser::_operator() {
     
     get_lex();
     switch (curr_lex_type) {
+           
+        // <marked_operator>
+        // <marked_operator> -> <identifier> ":" <_operator>
+        case Lex::IDENT: {
             
+            Lex label_lex = curr_lex;
+            
+            get_lex();
+            if (curr_lex_type != Lex::COLON) {
+                lexer.put_lex(curr_lex);
+                lexer.put_lex(label_lex);
+                bool result = expression_operator();
+                return result;
+            }
+            
+            // put ident in TID as LabelIdent
+            // save index of next free element in POLIZ for jump when goto will happen
+
+            LabelIdent * label_ident = new LabelIdent(label_lex.get_str_value());
+            label_ident->set_value(prog.get_free());
+                
+            if (!TID.put(label_ident))
+                throw Exeption("_operator marked_operator: double declaration");
+            
+            _operator();
+            
+            return true;
+            break;
+        }
+            
+        // "goto" <identifier> ";"
+        case Lex::GOTO: {
+            
+            get_lex();
+            
+            prog.put_lex(curr_lex);
+            prog.put_lex(Lex(Lex::POLIZ_GO));
+            
+            // if ident is found in the TID then extract its int_value for jump
+            
+            
+            // if ident is not found in the TID then ???
+            
+            expect(Lex::SEMICOLON, "_operator GOTO: expected SEMICOLON");
+            
+            return true;
+            break;
+        }
+        
         // "break"
         case Lex::BREAK:
             prog.put_lex(Lex(Lex::BREAK));
+            
+            return true;
+            break;
 
         // "if" "(" <expression> ")" <_operator> else <_operator>
         case Lex::IF:
@@ -380,8 +436,6 @@ bool Parser::_operator() {
             return result;
             break;
     }
-    
-    
 }
 
 // <composite_operator> -> "{" <operators> "}"

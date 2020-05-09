@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <iostream>
+#include <stack>
 
 #include "LexClass.hpp"
 #include "Exceptions.hpp"
@@ -48,7 +49,7 @@ private:
     int   buf_top;
     enum  state {H, LITERAL, NUM, DELIM, STRING, COMMENT, ALE};
     state CS;
-    Lex   pocket;
+    std::stack<Lex>   pocket_stack;
     static const char * Reserved_Table[];
     static const char * Delim_Table[];
     

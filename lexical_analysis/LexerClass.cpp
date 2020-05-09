@@ -24,7 +24,7 @@ const char * Lexer::Reserved_Table[] = {"program", "write", "read", "and", "or",
 const char * Lexer::Delim_Table[] = {":",";", ",", "(", ")", "{", "}", "+", "-", "*", "/", ">", "<", "=", ">=", "<=", "==", "!=", "\"", "#", NULL}; // change when new Lex is added in type_of_lex!!!!!
 
 Lexer::Lexer(const char * program_file_path)
-    : pocket() {
+    : pocket_stack() {
         
     fp = fopen(program_file_path, "r");
     if (!fp)
@@ -57,13 +57,13 @@ int Lexer::look(const char * buf, const char ** list) {
 }
 
 void Lexer::put_lex(Lex lex) {
-    pocket = lex;
+    pocket_stack.push(lex);
 }
 
 Lex Lexer::get_lex() {
-    if (pocket.get_type() != Lex::_NULL) {
-        Lex temp = pocket;
-        pocket = Lex::_NULL;
+    if (!pocket_stack.empty()) {
+        Lex temp = pocket_stack.top();
+        pocket_stack.pop();
         return temp;
     }
     CS = H;

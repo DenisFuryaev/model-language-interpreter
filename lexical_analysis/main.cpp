@@ -147,10 +147,29 @@ void Executer::execute(Poliz & prog) {
                 break;
             }
                 
-            case Lex::POLIZ_GO:
-                index = args.top().get_int_value() - 1;
+            case Lex::POLIZ_GO: {
+                
+                Lex arg_lex = args.top();
+                if (arg_lex.get_type() == Lex::IDENT) {
+                    int label_index = TID->index_of(arg_lex.get_str_value());
+                    if (label_index >= 0) {
+                        Ident * curr_ident = (*TID)[label_index];
+                        if (curr_ident->get_type() == Ident::LABEL) {
+                            LabelIdent * label_ident = dynamic_cast<LabelIdent *>(curr_ident);
+                            index = label_ident->get_value() - 1;
+                        }
+                        else
+                            throw Exeption("POLIZ_GO: ident type must be label");
+                    }
+                    else
+                        throw Exeption("POLIZ_GO: undeclared label");
+                }
+                else 
+                    index = args.top().get_int_value() - 1;
+                
                 args.pop();
                 break;
+            }
                 
             case Lex::POLIZ_FGO: {
                 int jmp_index = args.top().get_int_value();

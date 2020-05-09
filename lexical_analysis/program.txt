@@ -2,16 +2,13 @@ program {
 	int a = 51,b = 6,c = 1, d = 0;
 	string str = "", str2 = "";
 
-	if (c >= 100 or str == str2)
-		read(str);
-	else
-		c = a = 121;
 
-	while(c > 100) {
-		str = str + "step";
-		c = c - 5;
-		write(c);
-	}
-	write(str);
-	write(a);
+start:
+	
+	write(c);
+	c = c + 1;
+	if (c <= 5)
+		goto start;
+
+	write(a,b,c,d);
 }

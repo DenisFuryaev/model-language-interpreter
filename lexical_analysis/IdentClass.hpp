@@ -18,7 +18,7 @@
 class Ident {
     
 public:
-    enum var_type {INT, BOOL, STR};
+    enum var_type {INT, BOOL, STR, LABEL};
 
     Ident(const char * name);
     char *  get_name();
@@ -77,6 +77,22 @@ public:
     
 private:
     bool value;
+};
+
+class LabelIdent : public Ident {
+    
+public:
+    LabelIdent(const char * name)
+    : Ident(name) {}
+
+    virtual var_type    get_type() { return Ident::LABEL; }
+    int                 get_value();
+    void                set_value(int value);
+    virtual void        put_value(const char * value);
+    virtual void        dump_str_value();
+    
+private:
+    int value;
 };
 
 #endif /* IdentClass_hpp */
