@@ -6,14 +6,14 @@
 //  Copyright © 2020 Denis Furyaev. All rights reserved.
 //
 
-#ifndef LexerClass_hpp
-#define LexerClass_hpp
+#ifndef Lexer_hpp
+#define Lexer_hpp
 
 #include <stdio.h>
 #include <iostream>
 #include <stack>
 
-#include "LexClass.hpp"
+#include "Lex.hpp"
 #include "Exceptions.hpp"
 
 #define buf_size 50

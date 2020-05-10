@@ -435,7 +435,7 @@ void Executer::execute(Poliz & prog) {
                 
                 if (!int_arg_1)
                     throw Exeption("division by zero");
-                
+                    
                 int result = (int_arg_2 / int_arg_1);
                 args.push(Lex(type_arg_1, result));
                 

@@ -11,7 +11,7 @@
 
 #include <stdio.h>
 
-#include "IdentClass.hpp"
+#include "Ident.hpp"
 
 class Tabl_Ident {
     

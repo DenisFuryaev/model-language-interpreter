@@ -10,7 +10,7 @@
 #define Poliz_hpp
 
 #include <stdio.h>
-#include "LexClass.hpp"
+#include "Lex.hpp"
 
 class Poliz {
 public:

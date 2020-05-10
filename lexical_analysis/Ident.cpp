@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 
-#include "IdentClass.hpp"
+#include "Ident.hpp"
 #include <string>
 
 Ident::Ident(const char * name) {

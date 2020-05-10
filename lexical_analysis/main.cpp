@@ -10,10 +10,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "LexClass.hpp"
-#include "LexerClass.hpp"
-#include "IdentClass.hpp"
-#include "Tabl_Ident_Class.hpp"
+#include "Lex.hpp"
+#include "Lexer.hpp"
+#include "Ident.hpp"
+#include "Tabl_Ident.hpp"
 #include "Exceptions.hpp"
 #include "Poliz.hpp"
 #include "Parser.hpp"
@@ -26,7 +26,7 @@
  1 - with debug
 */
 #define debug_TID   1
-#define debug_POLIZ 1
+#define debug_POLIZ 0
 #define debug_LEXER 0
 
 //======================================================================================================================================================

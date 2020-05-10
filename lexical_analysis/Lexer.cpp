@@ -9,7 +9,7 @@
 #include <iostream>
 #include <stdio.h>
 
-#include "LexerClass.hpp"
+#include "Lexer.hpp"
 
 LexExeption::LexExeption(Lex::type_of_lex lex_type, const char * message)
     : Exeption(message) {
@@ -22,7 +22,7 @@ Lex LexExeption::get_lex_type() {
 void  Lexer::read_char() { c = fgetc(fp); }
 
 const char * Lexer::Reserved_Table[] = {"program", "write", "read", "and", "or", "not", "if", "else", "case", "of", "end", "do", "while", "for",
-                                        "until", "continue", "break", "true", "false", "int", "real", "boolean", "string", "goto", NULL};           // change when new Lex is added in type_of_lex!!!!!"
+                                        "until", "continue", "break", "true", "false", "int", "real", "boolean", "string", "goto", "struct", NULL};           // change when new Lex is added in type_of_lex!!!!!"
 
 const char * Lexer::Delim_Table[] = {":",";", ",", "(", ")", "{", "}", "+", "-", "-", "*", "/", ">", "<", "=", ">=", "<=", "==", "!=", "\"", "#", NULL}; // change when new Lex is added in type_of_lex!!!!!
 
@@ -114,7 +114,7 @@ Lex Lexer::get_lex() {
                 break;
                 
             case LITERAL:
-                if (isalpha(c) || isdigit(c)) {
+                if (isalpha(c) || isdigit(c) || (c == '.')) {
                     add_char(); read_char();
                 }
                 else

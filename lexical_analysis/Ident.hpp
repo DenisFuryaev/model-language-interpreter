@@ -11,14 +11,14 @@
 
 #include <stdio.h>
 
-#include "LexClass.hpp"
+#include "Lex.hpp"
 
 #define buf_size 50
 
 class Ident {
     
 public:
-    enum var_type {INT, BOOL, STR, LABEL};
+    enum var_type {INT, BOOL, STR, LABEL, STRUCT};
 
     Ident(const char * name);
     char *  get_name();

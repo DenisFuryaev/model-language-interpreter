@@ -6,7 +6,7 @@
 //  Copyright © 2020 Denis Furyaev. All rights reserved.
 //
 
-#include "Tabl_Ident_Class.hpp"
+#include "Tabl_Ident.hpp"
 
 Tabl_Ident::Tabl_Ident(int max_size) {
     size = max_size;

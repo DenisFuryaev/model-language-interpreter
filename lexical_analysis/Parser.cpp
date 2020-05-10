@@ -11,7 +11,9 @@
 /*
 
  <program>      ->  program "{" <declarations> <operators> "}"
- <declarations> ->  { <declaration>";" }
+ <declarations> ->  { <struct_type_declaration> } { <declaration> ";" }
+ <struct_type_declaration>  ->  "struct" <identifier> "{" <struct_declaration> ";" { <struct_declaration> ";" } "}" ";"
+ <struct_declaration> -> [ "int" | "string" | "boolean" ] <identifier> { "," <identifier> }
  <declaration>  ->  <type> <variable> { ","<variable> }
  <type>         ->  "int" | "string" | "boolean"
  <variable>     ->  <identifier> | <identifier> "=" <constant>
@@ -94,13 +96,80 @@ void Parser::program() {
         throw LexExeption(curr_lex.get_type(), curr_lex.get_str_value());
 }
 
-// <declarations> -> { <declaration>";" }
+// <declarations> ->  { <struct_decl> } { <declaration> ";" }
 void Parser::declarations() {
-    while (declaration()) {}
+    while (struct_type_declaration());
+    while (declaration());
+}
+
+// <struct_type_declaration>  ->  "struct" <identifier> "{" <struct_declaration> ";" { <struct_declaration> ";" } "}" ";"
+bool Parser::struct_type_declaration() {
+    get_lex();
+    if (curr_lex_type != Lex::STRUCT) {
+        lexer.put_lex(curr_lex);
+        return false;
+    }
+
+    Lex struct_lex = curr_lex;
+    expect(Lex::IDENT, "struct_declaration: expected IDENT");
+    Lex ident_lex = curr_lex;
+    
+    
+    get_lex();
+    if (curr_lex_type != Lex::OPEN_BRACES) {
+        lexer.put_lex(curr_lex);
+        lexer.put_lex(ident_lex);
+        lexer.put_lex(struct_lex);
+        return false;
+    }
+
+    VarMap var_map;
+    
+    struct_map[std::string(ident_lex.get_str_value())] = var_map;
+    
+    while (struct_declaration(ident_lex.get_str_value()));
+    
+    expect(Lex::CLOSE_BRACES, "struct_declaration: expected CLOSE_BRACES");
+    expect(Lex::SEMICOLON, "struct_declaration: expected SEMICOLON");
+    
+    return true;
+}
+
+// <struct_declaration> -> [ "int" | "string" | "boolean" ] <identifier> { "," <identifier> }
+bool Parser::struct_declaration(const char * struct_name) {
+    get_lex();
+    Ident::var_type var_type;
+    switch (curr_lex_type) {
+        case Lex::INT:
+            var_type = Ident::INT;
+            break;
+        case Lex::STRING_TYPE:
+            var_type = Ident::STR;
+            break;
+        case Lex::BOOLEAN:
+            var_type = Ident::BOOL;
+            break;
+        default:
+            lexer.put_lex(curr_lex);
+            return false;
+    }
+    
+    do {
+        expect(Lex::IDENT, "struct_declaration: expected IDENT");
+        if (struct_map[struct_name].find(std::string(curr_lex_value)) != struct_map[struct_name].end())
+            throw Exeption("struct: double declaration");
+        struct_map[struct_name][std::string(curr_lex_value)] = var_type;
+        get_lex();
+    } while (curr_lex_type == Lex::COMMA);
+    lexer.put_lex(curr_lex);
+    
+    expect(Lex::SEMICOLON, "struct_declaration: expected SEMICOLON");
+    
+    return true;
 }
 
 // <declaration> -> <type> <variable> { ","<variable> }
-// <type>        -> "int" | "string" | "boolean"
+// <type>        -> "int" | "string" | "boolean" | "struct"
 bool Parser::declaration() {
     get_lex();
     Ident::var_type var_type;
@@ -114,6 +183,59 @@ bool Parser::declaration() {
         case Lex::BOOLEAN:
             var_type = Ident::BOOL;
             break;
+        case Lex::STRUCT: {
+            var_type = Ident::STRUCT;
+            
+            expect(Lex::IDENT, "struct name expected");
+            std::string struct_name(curr_lex_value);
+            
+            while (true) {
+                expect(Lex::IDENT, "struct name expected");
+                
+                for (VarMap::iterator i = struct_map[struct_name].begin(); i != struct_map[struct_name].end(); i++) {
+                    char name[20];
+                    strcpy(name, curr_lex_value);
+                    strcat(name, ".");
+                    strcat(name, i->first.c_str());
+                    Ident::var_type type = i->second;
+                    
+                    Ident * ident = NULL;
+                    switch (type) {
+                        case Ident::INT:
+                            ident = new IntIdent(name);
+                            if (!TID.put(ident))
+                                throw Exeption("struct: double declaration");
+                            break;
+                            
+                        case Ident::STR:
+                            ident = new StringIdent(name);
+                            if (!TID.put(ident))
+                                throw Exeption("struct: double declaration");
+                            break;
+                            
+                        case Ident::BOOL:
+                            ident = new BoolIdent(name);
+                            if (!TID.put(ident))
+                                throw Exeption("struct: double declaration");
+                            break;
+                            
+                        default:
+                            throw LexExeption(curr_lex.get_type(), curr_lex.get_str_value());
+                            break;
+                    }
+                }
+                
+                get_lex();
+                if (curr_lex_type != Lex::COMMA) {
+                    if (curr_lex_type != Lex::SEMICOLON)
+                        Exeption("struct expected SEMICOLON");
+                    break;
+                }
+            }
+            
+            return true;
+            break;
+        }
         default:
             lexer.put_lex(curr_lex);
             return false;
@@ -149,16 +271,19 @@ void Parser::variable(Ident::var_type var_type) {
                 if (!TID.put(ident))
                     throw Exeption("variable: double declaration");
                 break;
+                
             case Ident::STR:
                 ident = new StringIdent(var_name);
                 if (!TID.put(ident))
                     throw Exeption("variable: double declaration");
                 break;
+                
             case Ident::BOOL:
                 ident = new BoolIdent(var_name);
                 if (!TID.put(ident))
                     throw Exeption("variable: double declaration");
                 break;
+                
             default:
                 throw LexExeption(curr_lex.get_type(), curr_lex.get_str_value());
                 break;

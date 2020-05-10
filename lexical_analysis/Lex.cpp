@@ -6,13 +6,13 @@
 //  Copyright © 2020 Denis Furyaev. All rights reserved.
 //
 
-#include "LexClass.hpp"
+#include "Lex.hpp"
 
 const char * type_of_lex_readable[] = {
     "NULL", "FIN",
     "NUM", "IDENT", "STRING",
     "PROGRAM", "WRITE", "READ", "AND", "OR", "NOT", "IF", "ELSE", "CASE", "OF", "END", "DO", "WHILE", "FOR", "UNTIL", "CONTINUE", "BREAK", "TRUE", "FALSE",
-    "INT", "REAL", "BOOLEAN", "STRING_TYPE", "GOTO",
+    "INT", "REAL", "BOOLEAN", "STRING_TYPE", "GOTO", "STRUCT",
     "COLON", "SEMICOLON", "COMMA", "OPEN_PAREN", "CLOSE_PAREN", "OPEN_BRACES", "CLOSE_BRACES", "PLUS", "MINUS", "NEGATIVE", "MUL", "DIV", "BIGGER", "LESS", "ASSIGN", "BIGGER_EQUAL", "LESS_EQUAL", "EQUAL", "NOT_EQUAL", "QOUTE", "COMMENT",
     "POLIZ_LABEL", "POLIZ_GO", "POLIZ_FGO"
     

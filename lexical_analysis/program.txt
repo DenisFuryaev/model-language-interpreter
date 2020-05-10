@@ -1,10 +1,12 @@
 program {
+	struct x {
+		int a,b;
+		boolean bool;
+	};
 
-	int a = 65;
-	boolean bool1 = false, bool2 = true;
-	
-	for (a = 0; a < 5; a = a + 1)
-		write(-a);
-	bool2 = bool1 or true;
-	write(bool1, bool2, -a);
+	struct x x1;
+	int    a = 9;
+
+	x1.a = a;
+	write(x1.a);
 }

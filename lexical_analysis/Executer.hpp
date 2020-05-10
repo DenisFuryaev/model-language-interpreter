@@ -11,8 +11,8 @@
 
 #include <stdio.h>
 #include "Poliz.hpp"
-#include "LexClass.hpp"
-#include "Tabl_Ident_Class.hpp"
+#include "Lex.hpp"
+#include "Tabl_Ident.hpp"
 
 #include <stack>
 

@@ -8,14 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		975F8097244C6A88000160F9 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 975F8096244C6A88000160F9 /* main.cpp */; };
-		976DF2B8245C27D800CEB531 /* IdentClass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 976DF2B6245C27D800CEB531 /* IdentClass.cpp */; };
-		976DF2BB245C569E00CEB531 /* Tabl_Ident_Class.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 976DF2B9245C569E00CEB531 /* Tabl_Ident_Class.cpp */; };
+		976DF2B8245C27D800CEB531 /* Ident.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 976DF2B6245C27D800CEB531 /* Ident.cpp */; };
+		976DF2BB245C569E00CEB531 /* Tabl_Ident.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 976DF2B9245C569E00CEB531 /* Tabl_Ident.cpp */; };
 		976DF2BE245EBD7900CEB531 /* Exceptions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 976DF2BC245EBD7900CEB531 /* Exceptions.cpp */; };
 		976DF2C1245ED63500CEB531 /* Poliz.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 976DF2BF245ED63500CEB531 /* Poliz.cpp */; };
 		977BB11D24640946009C9C2F /* Parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 977BB11B24640946009C9C2F /* Parser.cpp */; };
 		977BB1202466CD6A009C9C2F /* Executer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 977BB11E2466CD6A009C9C2F /* Executer.cpp */; };
-		978E099B245B06890040EFF9 /* LexerClass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 978E0999245B06890040EFF9 /* LexerClass.cpp */; };
-		978E099E245B07810040EFF9 /* LexClass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 978E099C245B07810040EFF9 /* LexClass.cpp */; };
+		978E099B245B06890040EFF9 /* Lexer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 978E0999245B06890040EFF9 /* Lexer.cpp */; };
+		978E099E245B07810040EFF9 /* Lex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 978E099C245B07810040EFF9 /* Lex.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -33,10 +33,10 @@
 /* Begin PBXFileReference section */
 		975F8093244C6A88000160F9 /* lexical_analysis */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = lexical_analysis; sourceTree = BUILT_PRODUCTS_DIR; };
 		975F8096244C6A88000160F9 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		976DF2B6245C27D800CEB531 /* IdentClass.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IdentClass.cpp; sourceTree = "<group>"; };
-		976DF2B7245C27D800CEB531 /* IdentClass.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IdentClass.hpp; sourceTree = "<group>"; };
-		976DF2B9245C569E00CEB531 /* Tabl_Ident_Class.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Tabl_Ident_Class.cpp; sourceTree = "<group>"; };
-		976DF2BA245C569E00CEB531 /* Tabl_Ident_Class.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Tabl_Ident_Class.hpp; sourceTree = "<group>"; };
+		976DF2B6245C27D800CEB531 /* Ident.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Ident.cpp; sourceTree = "<group>"; };
+		976DF2B7245C27D800CEB531 /* Ident.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Ident.hpp; sourceTree = "<group>"; };
+		976DF2B9245C569E00CEB531 /* Tabl_Ident.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Tabl_Ident.cpp; sourceTree = "<group>"; };
+		976DF2BA245C569E00CEB531 /* Tabl_Ident.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Tabl_Ident.hpp; sourceTree = "<group>"; };
 		976DF2BC245EBD7900CEB531 /* Exceptions.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Exceptions.cpp; sourceTree = "<group>"; };
 		976DF2BD245EBD7900CEB531 /* Exceptions.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Exceptions.hpp; sourceTree = "<group>"; };
 		976DF2BF245ED63500CEB531 /* Poliz.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Poliz.cpp; sourceTree = "<group>"; };
@@ -45,10 +45,10 @@
 		977BB11C24640946009C9C2F /* Parser.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Parser.hpp; sourceTree = "<group>"; };
 		977BB11E2466CD6A009C9C2F /* Executer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Executer.cpp; sourceTree = "<group>"; };
 		977BB11F2466CD6A009C9C2F /* Executer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Executer.hpp; sourceTree = "<group>"; };
-		978E0999245B06890040EFF9 /* LexerClass.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = LexerClass.cpp; sourceTree = "<group>"; };
-		978E099A245B06890040EFF9 /* LexerClass.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = LexerClass.hpp; sourceTree = "<group>"; };
-		978E099C245B07810040EFF9 /* LexClass.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = LexClass.cpp; sourceTree = "<group>"; };
-		978E099D245B07810040EFF9 /* LexClass.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = LexClass.hpp; sourceTree = "<group>"; };
+		978E0999245B06890040EFF9 /* Lexer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Lexer.cpp; sourceTree = "<group>"; };
+		978E099A245B06890040EFF9 /* Lexer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Lexer.hpp; sourceTree = "<group>"; };
+		978E099C245B07810040EFF9 /* Lex.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Lex.cpp; sourceTree = "<group>"; };
+		978E099D245B07810040EFF9 /* Lex.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Lex.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,14 +82,14 @@
 			isa = PBXGroup;
 			children = (
 				975F8096244C6A88000160F9 /* main.cpp */,
-				978E0999245B06890040EFF9 /* LexerClass.cpp */,
-				978E099A245B06890040EFF9 /* LexerClass.hpp */,
-				978E099C245B07810040EFF9 /* LexClass.cpp */,
-				978E099D245B07810040EFF9 /* LexClass.hpp */,
-				976DF2B6245C27D800CEB531 /* IdentClass.cpp */,
-				976DF2B7245C27D800CEB531 /* IdentClass.hpp */,
-				976DF2B9245C569E00CEB531 /* Tabl_Ident_Class.cpp */,
-				976DF2BA245C569E00CEB531 /* Tabl_Ident_Class.hpp */,
+				978E0999245B06890040EFF9 /* Lexer.cpp */,
+				978E099A245B06890040EFF9 /* Lexer.hpp */,
+				978E099C245B07810040EFF9 /* Lex.cpp */,
+				978E099D245B07810040EFF9 /* Lex.hpp */,
+				976DF2B6245C27D800CEB531 /* Ident.cpp */,
+				976DF2B7245C27D800CEB531 /* Ident.hpp */,
+				976DF2B9245C569E00CEB531 /* Tabl_Ident.cpp */,
+				976DF2BA245C569E00CEB531 /* Tabl_Ident.hpp */,
 				976DF2BC245EBD7900CEB531 /* Exceptions.cpp */,
 				976DF2BD245EBD7900CEB531 /* Exceptions.hpp */,
 				976DF2BF245ED63500CEB531 /* Poliz.cpp */,
@@ -161,11 +161,11 @@
 			files = (
 				977BB11D24640946009C9C2F /* Parser.cpp in Sources */,
 				975F8097244C6A88000160F9 /* main.cpp in Sources */,
-				976DF2B8245C27D800CEB531 /* IdentClass.cpp in Sources */,
-				978E099E245B07810040EFF9 /* LexClass.cpp in Sources */,
-				978E099B245B06890040EFF9 /* LexerClass.cpp in Sources */,
+				976DF2B8245C27D800CEB531 /* Ident.cpp in Sources */,
+				978E099E245B07810040EFF9 /* Lex.cpp in Sources */,
+				978E099B245B06890040EFF9 /* Lexer.cpp in Sources */,
 				976DF2C1245ED63500CEB531 /* Poliz.cpp in Sources */,
-				976DF2BB245C569E00CEB531 /* Tabl_Ident_Class.cpp in Sources */,
+				976DF2BB245C569E00CEB531 /* Tabl_Ident.cpp in Sources */,
 				977BB1202466CD6A009C9C2F /* Executer.cpp in Sources */,
 				976DF2BE245EBD7900CEB531 /* Exceptions.cpp in Sources */,
 			);
