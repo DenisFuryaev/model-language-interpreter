@@ -8,8 +8,10 @@
 
 #include "Executer.hpp"
 #include "Exceptions.hpp"
+#include "Parser.hpp"
 
-Executer::Executer(const Tabl_Ident * TID) {
+Executer::Executer(const Tabl_Ident * TID, Parser::StructMap & s_map)
+ : struct_map(s_map) {
     this->TID = TID;
 }
 
@@ -308,6 +310,7 @@ void Executer::execute(Poliz & prog) {
                 
                 const char * str_arg_1;
                 
+                
                 switch (lex_arg_1.get_type()) {
                     case Lex::IDENT: {
                         Ident * ident = (*TID)[lex_arg_1.get_int_value()];
@@ -338,6 +341,10 @@ void Executer::execute(Poliz & prog) {
                                     throw Exeption("dynamic_cast eroor");
                                 int_arg_1 = bool_ident->get_value();
                                 type_arg_1 = Lex::BOOLEAN;
+                                break;
+                            }
+                                
+                            case Ident::STRUCT: {
                                 break;
                             }
                                 
@@ -409,6 +416,57 @@ void Executer::execute(Poliz & prog) {
                         if (!((type_arg_1 == Lex::_TRUE) || (type_arg_1 == Lex::_TRUE) || (type_arg_1 == Lex::BOOLEAN)))
                             throw Exeption("Assign types conflict");
                         bool_ident->set_value(int_arg_1);
+                        args.push(lex_arg_2);
+                        break;
+                    }
+
+                    case Ident::STRUCT: {
+                        StructIdent * struct_ident = dynamic_cast <StructIdent*> (ident);
+                        if (!struct_ident)
+                            throw Exeption("dynamic_cast eroor");
+                        
+                        
+                        for (Parser::VarMap::iterator i = struct_map[struct_ident->get_struct_name()].begin(); i != struct_map[struct_ident->get_struct_name()].end(); i++) {
+                            char name_2[20];
+                            strcpy(name_2, struct_ident->get_name());
+                            strcat(name_2, ".");
+                            strcat(name_2, i->first.c_str());
+                            
+                            char name_1[20];
+                            strcpy(name_1, lex_arg_1.get_str_value());
+                            strcat(name_1, ".");
+                            strcat(name_1, i->first.c_str());
+                            
+                            Ident * ident_1 = (*TID)[TID->index_of(name_1)];
+                            Ident * ident_2 = (*TID)[TID->index_of(name_2)];
+
+                            if (ident_1->get_type() != ident_2->get_type())
+                                throw Exeption("struct: struct operand expected");
+                            
+                            switch (ident_1->get_type()) {
+                                case Ident::INT: {
+                                    IntIdent * int_ident_1 = dynamic_cast <IntIdent*> (ident_1);
+                                    IntIdent * int_ident_2 = dynamic_cast <IntIdent*> (ident_2);
+                                    int_ident_2->set_value(int_ident_1->get_value());
+                                    break;
+                                }
+                                case Ident::STR: {
+                                    StringIdent * str_ident_1 = dynamic_cast <StringIdent*> (ident_1);
+                                    StringIdent * str_ident_2 = dynamic_cast <StringIdent*> (ident_2);
+                                    str_ident_2->set_value(str_ident_1->get_value());
+                                    break;
+                                }
+                                case Ident::BOOL: {
+                                    BoolIdent * bool_ident_1 = dynamic_cast <BoolIdent*> (ident_1);
+                                    BoolIdent * bool_ident_2 = dynamic_cast <BoolIdent*> (ident_2);
+                                    bool_ident_2->set_value(bool_ident_1->get_value());
+                                    break;
+                                }
+                                default:
+                                    throw LexExeption(curr_lex.get_type(), curr_lex.get_str_value());
+                                    break;
+                            }
+                        }
                         args.push(lex_arg_2);
                         break;
                     }

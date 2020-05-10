@@ -1,12 +1,20 @@
 program {
 	struct x {
 		int a,b;
-		boolean bool;
+		string c;
+		boolean d;
 	};
 
-	struct x x1;
+	struct x x1, x2;
 	int    a = 9;
 
-	x1.a = a;
-	write(x1.a);
+	x1.a = 1;
+	x1.b = 2;
+	x1.c = "c";
+	x1.d = false;
+
+
+	write(x2.a, x2.b, x2.c, x2.d);
+	x2 = x1;
+	write(x2.a, x2.b, x2.c, x2.d);
 }

@@ -192,6 +192,10 @@ bool Parser::declaration() {
             while (true) {
                 expect(Lex::IDENT, "struct name expected");
                 
+                StructIdent * struct_ident = new StructIdent(curr_lex_value, struct_name.c_str());
+                if (!TID.put(struct_ident))
+                    throw Exeption("variable: double declaration");
+                
                 for (VarMap::iterator i = struct_map[struct_name].begin(); i != struct_map[struct_name].end(); i++) {
                     char name[20];
                     strcpy(name, curr_lex_value);

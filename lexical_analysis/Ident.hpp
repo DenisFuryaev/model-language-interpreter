@@ -23,8 +23,8 @@ public:
     Ident(const char * name);
     char *  get_name();
     virtual var_type get_type() = 0;
-    virtual void put_value(const char * value) = 0;
-    virtual void dump_str_value() = 0;
+    virtual void put_value(const char * value) {};
+    virtual void dump_str_value() {};
 
 private:
     char name[buf_size];
@@ -93,6 +93,19 @@ public:
     
 private:
     int value;
+};
+
+class StructIdent : public Ident {
+    
+public:
+    StructIdent(const char * name,  const char * struct_name);
+
+    virtual var_type    get_type() { return Ident::STRUCT; }
+    const char * get_struct_name() { return struct_name; }
+    
+private:
+    int value;
+    char struct_name[20];
 };
 
 #endif /* IdentClass_hpp */

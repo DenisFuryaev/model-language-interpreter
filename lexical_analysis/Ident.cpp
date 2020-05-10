@@ -15,6 +15,11 @@ Ident::Ident(const char * name) {
     strcpy(this->name, name);
 }
 
+StructIdent::StructIdent(const char * name, const char * s_name)
+: Ident(name) {
+    std::strcpy(struct_name, s_name);
+}
+
 char *  Ident::get_name() { return name; }
 
 char *  StringIdent::get_value() { return value; }

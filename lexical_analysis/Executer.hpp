@@ -13,13 +13,14 @@
 #include "Poliz.hpp"
 #include "Lex.hpp"
 #include "Tabl_Ident.hpp"
+#include "Parser.hpp"
 
 #include <stack>
 
 class Executer {
 public:
     void execute(Poliz & prog);
-    Executer(const Tabl_Ident * TID);
+    Executer(const Tabl_Ident * TID, Parser::StructMap & s_map);
     
 private:
     void to_int(Lex lex_arg_1, int & int_arg_1, Lex::type_of_lex & type_arg_1) const;
@@ -31,6 +32,7 @@ private:
 private:
     Lex curr_lex;
     const Tabl_Ident * TID;
+    Parser::StructMap & struct_map;
 };
 
 #endif /* Executer_hpp */

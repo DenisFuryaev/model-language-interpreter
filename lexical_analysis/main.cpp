@@ -49,7 +49,7 @@ int main(int argc, const char * argv[]) {
             std::cout << std::endl;
         }
 
-        Executer executer(&(parser.TID));
+        Executer executer(&(parser.TID), parser.struct_map);
 
         std::cout << " Program output:" << std::endl;
         executer.execute(parser.prog);
